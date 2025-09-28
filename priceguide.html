@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeroClix Collection Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .collection-grid {
+            padding: 30px;
+        }
+        
+        .set-section {
+            margin-bottom: 40px;
+            border: 1px solid #e9ecef;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .set-header {
+            background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+            color: white;
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .set-stats {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .figures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .figure-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+        
+        .figure-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .figure-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .figure-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #2c3e50;
+            flex: 1;
+        }
+        
+        .quantity-badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .figure-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .price-display {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .price-amount {
+            font-weight: bold;
+            color: #1976d2;
+            font-size: 1.1em;
+        }
+        
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #d32f2f;
+            font-size: 0.9em;
+        }
+        
+        .notes-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .sold-indicator {
+            background: #4caf50;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        
+        .total-value {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #2c3e50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            font-weight: bold;
+            z-index: 1000;
+        }
+        
+        @media (max-width: 768px) {
+            .figures-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .search-bar {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🦸 HeroClix Collection Manager</h1>
+            <p>Manage and price your complete HeroClix collection</p>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalFigures">0</div>
+                    <div>Total Figures</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalSets">0</div>
+                    <div>Sets</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalValue">$0</div>
+                    <div>Est. Value</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="search-bar">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search your collection...">
+                <button class="btn btn-primary" onclick="searchCollection()">🔍 Search</button>
+                <button class="btn btn-secondary" onclick="exportCollection()">📊 Export</button>
+            </div>
+            <div class="filters">
+                <button class="btn btn-secondary btn-small" onclick="getPricesForAll()">💰 Get All Prices</button>
+                <button class="btn btn-secondary btn-small" onclick="showHighValue()">💎 High Value Items</button>
+                <button class="btn btn-secondary btn-small" onclick="showUnsold()">📦 Available Items</button>
+                <button class="btn btn-secondary btn-small" onclick="clearAll()">🗑️ Clear Data</button>
+            </div>
+        </div>
+        
+        <div class="collection-grid" id="collectionGrid">
+            <!-- Collection will be loaded here -->
+        </div>
+    </div>
+    
+    <div class="total-value" id="totalValueDisplay">
+        Total Value: $0.00
+    </div>
+
+    <script>
+        // Complete collection data parsed from the original list
+        const collectionData = {
+            "The Hobbit: The Desolation of Smaug": [
+                {id: "008", name: "Azog", quantity: 1}
+            ],
+            "Iron Maiden": [
+                {id: "001", name: "Iron Maiden", quantity: 1}
+            ],
+            "Assassin's Creed Brotherhood": [
+                {id: "001", name: "Ezio Auditore de Firenze", quantity: 1},
+                {id: "002", name: "Mario Auditore", quantity: 1},
+                {id: "003", name: "La Volpe", quantity: 1},
+                {id: "004", name: "Bartolomeo d'Alviano", quantity: 1},
+                {id: "005", name: "Cesare Borgia", quantity: 1},
+                {id: "006", name: "Octavian de Valois", quantity: 1}
+            ],
+            "Assassin's Creed Revelations": [
+                {id: "001", name: "Ezio", quantity: 1},
+                {id: "002", name: "Prince Ahmet", quantity: 1},
+                {id: "003", name: "Yusuf Tazim", quantity: 1},
+                {id: "004", name: "The Guardian", quantity: 1},
+                {id: "005", name: "The Bombardier", quantity: 1},
+                {id: "006", name: "The Vanguard", quantity: 1}
+            ],
+            "SDCC Combo-Pack": [
+                {id: "003", name: "Morgan Spurlock", quantity: 1},
+                {id: "004", name: "Harry Knowles", quantity: 1}
+            ],
+            "Lord of the Rings": [
+                {id: "207", name: "Witch-King of Angmar", quantity: 1}
+            ],
+            "Marvel": [],
+            "Guardians of the Galaxy 2 Movie": [
+                {id: "010", name: "Rocket and Groot", quantity: 1}
+            ],
+            "Superior Foes of Spider-Man": [
+                {id: "045", name: "Lizard", quantity: 1}
+            ],
+            "Captain America: Civil War Starter": [
+                {id: "001", name: "Captain America", quantity: 1},
+                {id: "002", name: "Iron Man", quantity: 1},
+                {id: "003", name: "Black Widow", quantity: 1},
+                {id: "004", name: "Falcon", quantity: 1},
+                {id: "005", name: "Winter Soldier", quantity: 1},
+                {id: "006", name: "Black Panther", quantity: 1}
+            ],
+            "Avengers Assemble": [
+                {id: "066", name: "Goliath", quantity: 1}
+            ],
+            "Guardians of the Galaxy": [
+                {id: "001", name: "Gamora", quantity: 1},
+                {id: "002", name: "Drax the Destroyer", quantity: 1},
+                {id: "003", name: "Mantis", quantity: 1},
+                {id: "004", name: "Starhawk", quantity: 2},
+                {id: "005", name: "Major Victory", quantity: 1},
+                {id: "006b", name: "Chitauri Warleader", quantity: 1},
+                {id: "007a", name: "Kree Private", quantity: 2},
+                {id: "008a", name: "Raptor", quantity: 1},
+                {id: "009a", name: "Spaceknight", quantity: 1},
+                {id: "009b", name: "Ikon", quantity: 1},
+                {id: "010a", name: "Dire Wraith", quantity: 1},
+                {id: "010b", name: "Dire Wraith Queen", quantity: 1},
+                {id: "011a", name: "Spartoi Elite", quantity: 1},
+                {id: "011b", name: "Jason of Sparta", quantity: 2},
+                {id: "012a", name: "Rigellian Colonizer", quantity: 1},
+                {id: "013a", name: "Recorder", quantity: 1},
+                {id: "014a", name: "Badoon", quantity: 1},
+                {id: "014b", name: "Brother Royal", quantity: 1},
+                {id: "015", name: "Triton", quantity: 1},
+                {id: "016", name: "Nebula", quantity: 2},
+                {id: "018", name: "Alpha Primitive", quantity: 1},
+                {id: "019a", name: "Captain Marvel", quantity: 1},
+                {id: "019b", name: "Dr. Minerva", quantity: 1},
+                {id: "020", name: "Ronan the Accuser", quantity: 1},
+                {id: "021", name: "Korath the Pursuer", quantity: 1},
+                {id: "023", name: "Yondu", quantity: 1},
+                {id: "024", name: "Aleta", quantity: 1},
+                {id: "025", name: "Ebony Maw", quantity: 1},
+                {id: "026", name: "Crystal", quantity: 2},
+                {id: "028", name: "Karnak", quantity: 1},
+                {id: "029", name: "Moondragon", quantity: 1},
+                {id: "030", name: "Star-Lord", quantity: 1},
+                {id: "031", name: "Nova", quantity: 1},
+                {id: "032", name: "Starfox", quantity: 1},
+                {id: "036", name: "Black Bolt", quantity: 1},
+                {id: "037", name: "Lockjaw", quantity: 1},
+                {id: "040", name: "Martyr", quantity: 1},
+                {id: "042", name: "Gorr the God Butcher", quantity: 1},
+                {id: "046", name: "Black Dwarf", quantity: 1},
+                {id: "047a", name: "Thanos", quantity: 1},
+                {id: "048", name: "Supergiant", quantity: 1},
+                {id: "049", name: "Corvus Glaive", quantity: 1},
+                {id: "057", name: "Beyonder", quantity: 1},
+                {id: "058", name: "Mentor", quantity: 1}
+            ],
+            "Deadpool": [
+                {id: "003", name: "Dogpool", quantity: 1},
+                {id: "004", name: "Secret Empire Agent", quantity: 1},
+                {id: "007a", name: "Weapon X Scientist", quantity: 1},
+                {id: "008", name: "Colleen Wing", quantity: 1},
+                {id: "009", name: "Misty Knight", quantity: 1},
+                {id: "011", name: "Silver Sable", quantity: 1},
+                {id: "013", name: "Anaconda", quantity: 1},
+                {id: "014", name: "Hammerhead", quantity: 1},
+                {id: "015", name: "Daredevil", quantity: 1},
+                {id: "016", name: "Animus", quantity: 1},
+                {id: "018", name: "Blind Al", quantity: 1},
+                {id: "020", name: "Weasel", quantity: 1},
+                {id: "021", name: "Outlaw", quantity: 1},
+                {id: "026", name: "Agent Zero", quantity: 1},
+                {id: "028", name: "Siryn", quantity: 1},
+                {id: "031", name: "Elektra", quantity: 1}
+            ],
+            "The Invincible Iron Man": [
+                {id: "005", name: "Hammer Industries Drone", quantity: 1},
+                {id: "006", name: "Dreadnought", quantity: 1},
+                {id: "020", name: "Detroit Steel", quantity: 1},
+                {id: "021", name: "Sasha Hammer", quantity: 1},
+                {id: "030", name: "Mandarin", quantity: 1},
+                {id: "036", name: "Ghost", quantity: 1},
+                {id: "210", name: "Northstar", quantity: 1}
+            ],
+            "Thor: The Dark World": [
+                {id: "101", name: "Thor", quantity: 1},
+                {id: "102", name: "Malekith", quantity: 1},
+                {id: "104", name: "Loki", quantity: 1}
+            ],
+            "Wolverine and the X-Men": [
+                {id: "001", name: "Wolverine", quantity: 3},
+                {id: "002", name: "Colossus", quantity: 1},
+                {id: "003", name: "Shadowcat", quantity: 2},
+                {id: "004", name: "Mirage", quantity: 1},
+                {id: "007", name: "Shi'ar Soldier", quantity: 4},
+                {id: "008", name: "Dazzler", quantity: 1},
+                {id: "010", name: "Shatterstar", quantity: 2},
+                {id: "011a", name: "Deathlok", quantity: 2},
+                {id: "012", name: "Strong Guy", quantity: 1},
+                {id: "013", name: "Multiple Man", quantity: 1},
+                {id: "014", name: "Rictor", quantity: 4},
+                {id: "015", name: "Cyber", quantity: 5},
+                {id: "016", name: "Cyclops", quantity: 1},
+                {id: "017", name: "Jean Grey", quantity: 1},
+                {id: "018", name: "Sunspot", quantity: 3},
+                {id: "019", name: "Starbolt", quantity: 1},
+                {id: "020", name: "White King", quantity: 1},
+                {id: "021", name: "Flatman", quantity: 2},
+                {id: "025", name: "Polaris", quantity: 2},
+                {id: "028", name: "Kid Omega", quantity: 2},
+                {id: "029", name: "Sauron", quantity: 1},
+                {id: "035", name: "Black King", quantity: 1},
+                {id: "041", name: "Spiral", quantity: 2},
+                {id: "203", name: "Havok", quantity: 1},
+                {id: "205", name: "Multiple Man", quantity: 1},
+                {id: "206", name: "Shi'ar Guard", quantity: 1},
+                {id: "210", name: "Lady Deathstrike", quantity: 1}
+            ],
+            "Fear Itself": [
+                {id: "001", name: "Thule Society Priest", quantity: 1},
+                {id: "004", name: "Prodigy", quantity: 1},
+                {id: "005", name: "Valkyrie", quantity: 1},
+                {id: "006", name: "Red She-Hulk", quantity: 2},
+                {id: "008", name: "Titania", quantity: 1},
+                {id: "009", name: "Sin", quantity: 2},
+                {id: "010", name: "Speedball", quantity: 1},
+                {id: "024", name: "Greithoth", quantity: 1},
+                {id: "200", name: "Skadi", quantity: 1}
+            ],
+            "Iron Man 3": [
+                {id: "001", name: "Iron Man Mk 7", quantity: 4},
+                {id: "004", name: "Mandarin", quantity: 1},
+                {id: "005", name: "Extremis Soldier", quantity: 2},
+                {id: "006", name: "Tony Stark", quantity: 1},
+                {id: "007", name: "Pepper Potts", quantity: 2},
+                {id: "008", name: "Aldrich Killian", quantity: 1},
+                {id: "009", name: "Iron Man Mk 17", quantity: 1},
+                {id: "101", name: "Iron Man Mk 42", quantity: 1},
+                {id: "102", name: "Iron Patriot", quantity: 1}
+            ],
+            "Amazing Spider-Man": [
+                {id: "001a", name: "Spider-Man", quantity: 1},
+                {id: "002", name: "Shocker", quantity: 5},
+                {id: "003", name: "Dagger", quantity: 1},
+                {id: "004", name: "Blade", quantity: 4},
+                {id: "005", name: "Dr. Strange", quantity: 1},
+                {id: "007", name: "Johnny Blaze", quantity: 1},
+                {id: "008", name: "Doctor Druid", quantity: 5},
+                {id: "009", name: "Daimon Hellstrom", quantity: 4},
+                {id: "010", name: "Frankenstein's Monster", quantity: 3},
+                {id: "011", name: "Living Mummy", quantity: 6},
+                {id: "012", name: "Vampire", quantity: 4},
+                {id: "013a", name: "Frank Drake", quantity: 1},
+                {id: "014", name: "Werewolf", quantity: 2},
+                {id: "015", name: "Werewolf By Night", quantity: 4},
+                {id: "016", name: "Dracula", quantity: 2},
+                {id: "018", name: "Scarlet Spider", quantity: 4},
+                {id: "019", name: "Vulture", quantity: 1},
+                {id: "020", name: "Rhino", quantity: 1},
+                {id: "021", name: "Electro", quantity: 3},
+                {id: "022", name: "Cloak", quantity: 2},
+                {id: "023", name: "Wong", quantity: 3},
+                {id: "025", name: "Manphibian", quantity: 1},
+                {id: "026", name: "Mysterio", quantity: 3},
+                {id: "027", name: "Spider-Girl", quantity: 1},
+                {id: "028", name: "Morbius", quantity: 1},
+                {id: "029", name: "Demogoblin", quantity: 1},
+                {id: "030", name: "Lizard", quantity: 1},
+                {id: "031a", name: "Kraven the Hunter", quantity: 1},
+                {id: "033", name: "Man-Thing", quantity: 2},
+                {id: "034", name: "Satana Hellstrom", quantity: 1},
+                {id: "035", name: "Jennifer Kale", quantity: 3},
+                {id: "037", name: "Ancient One", quantity: 1},
+                {id: "038", name: "Carrion", quantity: 1},
+                {id: "201", name: "Spider-Man", quantity: 1},
+                {id: "203", name: "Dagger", quantity: 2},
+                {id: "204", name: "Rhino", quantity: 1},
+                {id: "205", name: "Electro", quantity: 1},
+                {id: "206", name: "Mysterio", quantity: 1},
+                {id: "207", name: "Blade", quantity: 1},
+                {id: "208", name: "Shocker", quantity: 1}
+            ],
+            "Marvel Heroclix 10th Anniversary": [
+                {id: "004", name: "Green Goblin", quantity: 1},
+                {id: "005", name: "Thor", quantity: 1},
+                {id: "008", name: "White Queen", quantity: 1}
+            ],
+            "Chaos War": [
+                {id: "001", name: "Captain America", quantity: 1},
+                {id: "002", name: "Iron Man Drone", quantity: 2},
+                {id: "003", name: "Ultron Drone", quantity: 3},
+                {id: "004", name: "Egghead", quantity: 3},
+                {id: "005", name: "Sentinel", quantity: 3},
+                {id: "006", name: "Space Phantom", quantity: 3},
+                {id: "007", name: "Masque Duplicate", quantity: 5},
+                {id: "008", name: "Lava Man", quantity: 2},
+                {id: "009", name: "Shadow Council Soldier", quantity: 4},
+                {id: "010", name: "Donald Blake", quantity: 1},
+                {id: "011", name: "Tony Stark", quantity: 2},
+                {id: "012", name: "Dinah Soar", quantity: 2},
+                {id: "013", name: "Vision", quantity: 1},
+                {id: "014", name: "Hank Pym", quantity: 3},
+                {id: "015", name: "Ant-Man", quantity: 3},
+                {id: "016", name: "Wasp", quantity: 2},
+                {id: "017", name: "Madame Masque", quantity: 4},
+                {id: "019", name: "Max Fury", quantity: 2},
+                {id: "020", name: "Black Knight", quantity: 2},
+                {id: "021", name: "Speed", quantity: 1},
+                {id: "022", name: "Sharon Carter", quantity: 1},
+                {id: "023", name: "Ms. Marvel", quantity: 3},
+                {id: "024", name: "Iron Man", quantity: 2},
+                {id: "026", name: "Ant-Man", quantity: 1},
+                {id: "027", name: "Genis-Vell", quantity: 1},
+                {id: "028", name: "Wonder Man", quantity: 1},
+                {id: "029", name: "Wolverine", quantity: 2},
+                {id: "030", name: "Wasp", quantity: 1},
+                {id: "031", name: "Black Knight", quantity: 1},
+                {id: "033", name: "Victoria Hand", quantity: 1},
+                {id: "034", name: "Ares", quantity: 1},
+                {id: "035", name: "Sentry", quantity: 1},
+                {id: "038", name: "Thor", quantity: 1},
+                {id: "040", name: "Nick Fury", quantity: 1},
+                {id: "209", name: "Spider-Woman", quantity: 1}
+            ],
+            "Fast Forces: Giant-Size X-Men": [
+                {id: "001", name: "Professor X", quantity: 1},
+                {id: "003", name: "Beast", quantity: 1}
+            ],
+            "Avengers Movie": [
+                {id: "001", name: "Captain America", quantity: 1},
+                {id: "004", name: "Thor", quantity: 1},
+                {id: "011", name: "Maria Hill", quantity: 1},
+                {id: "037", name: "S.H.I.E.L.D. Enforcer", quantity: 1},
+                {id: "203", name: "Nick Fury", quantity: 1}
+            ],
+            "Galactic Guardians": [
+                {id: "001", name: "Nova Prime", quantity: 5},
+                {id: "002", name: "Nova Corps Recruit", quantity: 1},
+                {id: "003", name: "Cardinal of the UCT", quantity: 4},
+                {id: "004", name: "Skrull Rebel", quantity: 4},
+                {id: "005", name: "Annihilation Seeker", quantity: 5},
+                {id: "006", name: "Doombot", quantity: 1},
+                {id: "007", name: "Blood Brother", quantity: 5},
+                {id: "008", name: "Nebula", quantity: 3},
+                {id: "009", name: "Namor", quantity: 3},
+                {id: "010", name: "Adam Warlock", quantity: 1},
+                {id: "011", name: "Drax", quantity: 3},
+                {id: "012", name: "Charlie-27", quantity: 3},
+                {id: "013", name: "Hollywood", quantity: 3},
+                {id: "014", name: "Astral Dr. Strange", quantity: 3},
+                {id: "015", name: "Nova Corps Centurion", quantity: 2},
+                {id: "016", name: "Cardinal Raker", quantity: 2},
+                {id: "017", name: "Lyja the Lazerfist", quantity: 3},
+                {id: "018", name: "Ravenous", quantity: 2},
+                {id: "019", name: "Dr. Doom", quantity: 1},
+                {id: "020", name: "Magus", quantity: 2},
+                {id: "021", name: "Red Shift", quantity: 1},
+                {id: "022", name: "Xavin", quantity: 4},
+                {id: "023", name: "Blastaar", quantity: 4},
+                {id: "024", name: "Nikki", quantity: 3},
+                {id: "025", name: "Martinex", quantity: 3},
+                {id: "028", name: "Dr. Strange", quantity: 1},
+                {id: "029", name: "Morg", quantity: 1},
+                {id: "030", name: "Fallen One", quantity: 1},
+                {id: "032", name: "Adam Warlock", quantity: 1},
+                {id: "033", name: "Gamora", quantity: 3},
+                {id: "039", name: "Cosmo", quantity: 1},
+                {id: "040", name: "Gladiator", quantity: 1},
+                {id: "201", name: "Nova", quantity: 1},
+                {id: "202", name: "Skrull Assassin", quantity: 2},
+                {id: "203", name: "Namor", quantity: 1},
+                {id: "206", name: "Dr. Strange", quantity: 2},
+                {id: "207", name: "Hulk", quantity: 2},
+                {id: "208", name: "Super Skrull", quantity: 1},
+                {id: "210", name: "Nova Corps Denarian", quantity: 1}
+            ],
+            "Fast Forces: Incredible Hulk": [
+                {id: "001", name: "Hulk", quantity: 2},
+                {id: "002", name: "Hulkbuster Wrangler", quantity: 2},
+                {id: "003", name: "She-Hulk", quantity: 2},
+                {id: "004", name: "Abomination", quantity: 2},
+                {id: "005", name: "General Thunderbolt Ross", quantity: 1},
+                {id: "006", name: "The Leader", quantity: 2}
+            ],
+            "Incredible Hulk": [
+                {id: "001", name: "Hulk", quantity: 2},
+                {id: "002", name: "Bruce Banner", quantity: 1},
+                {id: "003", name: "A.I.M. Agent", quantity: 1},
+                {id: "004", name: "Hulkbuster Soldier", quantity: 1},
+                {id: "005", name: "Humanoid", quantity: 1},
+                {id: "006", name: "Hulk Robot", quantity: 2},
+                {id: "008", name: "John Jameson", quantity: 3},
+                {id: "009", name: "Man-Wolf", quantity: 1},
+                {id: "010", name: "Punisher", quantity: 4},
+                {id: "011", name: "Punisher", quantity: 1},
+                {id: "012", name: "Thundra", quantity: 1},
+                {id: "013", name: "Abomination", quantity: 2},
+                {id: "014", name: "The Leader", quantity: 2},
+                {id: "015", name: "Skaar", quantity: 2},
+                {id: "016", name: "Lyra", quantity: 2},
+                {id: "017", name: "A.I.M. Renegade", quantity: 1},
+                {id: "018", name: "A.I.Marine", quantity: 3},
+                {id: "019", name: "Black Tarantula", quantity: 1},
+                {id: "020", name: "White Tiger", quantity: 3},
+                {id: "021", name: "Daredevil", quantity: 1},
+                {id: "023", name: "Punisher", quantity: 1},
+                {id: "024", name: "Jigsaw", quantity: 1},
+                {id: "026", name: "Hercules", quantity: 1},
+                {id: "027", name: "Amadeus Cho", quantity: 1},
+                {id: "029", name: "General Thunderbolt Ross", quantity: 2},
+                {id: "034", name: "Man-Beast", quantity: 2},
+                {id: "100", name: "A.I.Marine Hulk", quantity: 1},
+                {id: "202", name: "Bruce Banner", quantity: 1},
+                {id: "203", name: "Hulkbuster Squad Leader", quantity: 1}
+            ],
+            "Captain America": [
+                {id: "058", name: "Human Torch", quantity: 1}
+            ],
+            "Web of Spider-Man": [
+                {id: "100", name: "Spider-Man", quantity: 1}
+            ],
+            "Hammer of Thor": [
+                {id: "200", name: "War Machine", quantity: 1}
+            ],
+            "Mutations and Monsters": [
+                {id: "002", name: "Cyclops", quantity: 1},
+                {id: "006", name: "Pete Wisdom", quantity: 1},
+                {id: "008", name: "Box", quantity: 1},
+                {id: "015", name: "The Hood", quantity: 1},
+                {id: "020", name: "Morph", quantity: 1}
+            ],
+            "Avengers": [
+                {id: "001", name: "Captain America", quantity: 2},
+                {id: "002", name: "Iron Man", quantity: 2},
+                {id: "003", name: "Captain Britain", quantity: 1},
+                {id: "004", name: "Gargoyle", quantity: 4},
+                {id: "005", name: "Guardsman", quantity: 2},
+                {id: "006", name: "Moon Knight", quantity: 2},
+                {id: "007", name: "Crossbones", quantity: 2},
+                {id: "008", name: "Wonder Man", quantity: 3},
+                {id: "009", name: "Hulkling", quantity: 3},
+                {id: "010", name: "Patriot", quantity: 3},
+                {id: "011", name: "Stature", quantity: 1},
+                {id: "012", name: "Shang-Chi", quantity: 1},
+                {id: "013", name: "Piledriver", quantity: 4},
+                {id: "014", name: "Stingray", quantity: 2},
+                {id: "015", name: "U.S. Agent", quantity: 1},
+                {id: "016", name: "Luke Cage", quantity: 2},
+                {id: "017", name: "Living Laser", quantity: 1},
+                {id: "018", name: "Blazing Skull", quantity: 1},
+                {id: "019", name: "Darkhawk", quantity: 2},
+                {id: "020", name: "Dragon Man", quantity: 1},
+                {id: "021", name: "Toro", quantity: 2},
+                {id: "022", name: "Iron Widow", quantity: 2},
+                {id: "023", name: "Lionheart", quantity: 1},
+                {id: "024", name: "Black Panther", quantity: 2},
+                {id: "025", name: "Quicksilver", quantity: 1},
+                {id: "026", name: "Scarlet Witch", quantity: 1},
+                {id: "027", name: "Vision", quantity: 4},
+                {id: "029", name: "Taskmaster", quantity: 1},
+                {id: "030", name: "Iron Lad", quantity: 1},
+                {id: "031", name: "Ronin", quantity: 1},
+                {id: "032", name: "Red Skull", quantity: 1},
+                {id: "033", name: "Abomination", quantity: 1},
+                {id: "034", name: "Baron Zemo", quantity: 1},
+                {id: "035", name: "Bucky", quantity: 1},
+                {id: "036", name: "Falcon", quantity: 1},
+                {id: "037", name: "Thin Man", quantity: 2},
+                {id: "038", name: "Giant-Man", quantity: 3},
+                {id: "039", name: "Spitfire", quantity: 1},
+                {id: "040", name: "Namor", quantity: 3},
+                {id: "041", name: "Union Jack", quantity: 1},
+                {id: "042", name: "Starfox", quantity: 1},
+                {id: "043", name: "Molecule Man", quantity: 1},
+                {id: "044", name: "Grim Reaper", quantity: 2},
+                {id: "045", name: "Thunderstrike", quantity: 1},
+                {id: "046", name: "Namorita", quantity: 1},
+                {id: "048", name: "Yondu", quantity: 1},
+                {id: "049", name: "Two-Gun Kid", quantity: 1},
+                {id: "050", name: "Winter Soldier", quantity: 1},
+                {id: "051", name: "Spider-Man", quantity: 1},
+                {id: "052", name: "Citizen V", quantity: 1},
+                {id: "054", name: "Ares", quantity: 1},
+                {id: "060", name: "Cap and Bucky", quantity: 1},
+                {id: "061", name: "Mandarin", quantity: 1},
+                {id: "B001", name: "Edwin Jarvis", quantity: 1},
+                {id: "B003", name: "Ken Hale", quantity: 1},
+                {id: "B006", name: "Kat Farrell", quantity: 1},
+                {id: "B007", name: "Duane Freeman", quantity: 1},
+                {id: "BF001", name: "Ordinary Day", quantity: 1},
+                {id: "BF002", name: "Wasteland", quantity: 1},
+                {id: "BF003", name: "Exhaustion", quantity: 1},
+                {id: "BF004", name: "Inferno", quantity: 1},
+                {id: "BF005", name: "Atlantis Rising", quantity: 1},
+                {id: "S002", name: "Dark Cauldron", quantity: 1}
+            ],
+            "Sinister": [
+                {id: "005", name: "SHIELD Sniper", quantity: 1},
+                {id: "019", name: "Jewel", quantity: 1},
+                {id: "023", name: "Beetle", quantity: 1},
+                {id: "029", name: "Electro", quantity: 1},
+                {id: "031", name: "Fixer", quantity: 1},
+                {id: "035", name: "Jack O'Lantern", quantity: 1},
+                {id: "041", name: "MACH-3", quantity: 1},
+                {id: "043", name: "Nighthawk", quantity: 1},
+                {id: "064", name: "Captain Marvel", quantity: 1},
+                {id: "068", name: "Rhino", quantity: 1}
+            ],
+            "Armor Wars": [
+                {id: "089", name: "Black King", quantity: 1},
+                {id: "094", name: "Mystique", quantity: 1},
+                {id: "201", name: "Eliot Franklin", quantity: 1},
+                {id: "204", name: "Georges Baptiste", quantity: 1},
+                {id: "207", name: "Captain Britain", quantity: 1},
+                {id: "208", name: "Shiro Yoshida", quantity: 1},
+                {id: "214", name: "Tony Stark", quantity: 1},
+                {id: "215", name: "John Walker", quantity: 1}
+            ],
+            "Mutant Mayhem": [
+                {id: "216", name: "Dr. Bruce Banner", quantity: 1}
+            ],
+            "Clobberin Time": [
+                {id: "026", name: "Yellowjacket", quantity: 2},
+                {id: "055", name: "Black Widow", quantity: 1}
+            ],
+            "Infinity Challenge": [
+                {id: "033", name: "Elektra", quantity: 1},
+                {id: "109", name: "Mr. Hyde", quantity: 1},
+                {id: "130", name: "Kang", quantity: 1}
+            ],
+            "WizKids Marvel": [
+                {id: "M-001", name: "Moonstone", quantity: 1}
+            ],
+            "Indy": [
+                {id: "017", name: "Sydney Savage", quantity: 1},
+                {id: "031", name: "Arashi", quantity: 1},
+                {id: "040", name: "Boon", quantity: 1},
+                {id: "044", name: "Ian Nottingham", quantity: 1}
+            ],
+            "DC": [],
+            "Fast Forces: The Legion of Doom": [
+                {id: "001", name: "Lex Luthor", quantity: 1},
+                {id: "002", name: "Bizarro", quantity: 1},
+                {id: "003", name: "Cheetah", quantity: 1},
+                {id: "004", name: "Black Manta", quantity: 1},
+                {id: "005", name: "Solomon Grundy", quantity: 1},
+                {id: "006", name: "Giganta", quantity: 1}
+            ],
+            "Superman and the Legion of Super-Heroes": [
+                {id: "001", name: "Cosmic Boy", quantity: 1},
+                {id: "002", name: "Saturn Girl", quantity: 1},
+                {id: "003", name: "Lightning Lad", quantity: 1},
+                {id: "005a", name: "Daxamite", quantity: 1},
+                {id: "006", name: "Triplicate Girl", quantity: 3},
+                {id: "007", name: "Shrinking Violet", quantity: 2},
+                {id: "008", name: "Phantom Girl", quantity: 2},
+                {id: "009", name: "Blight", quantity: 2},
+                {id: "010", name: "Polar Boy", quantity: 3},
+                {id: "011", name: "Sensor Girl", quantity: 1},
+                {id: "012", name: "Tyroc", quantity: 1},
+                {id: "013", name: "Ladytron", quantity: 1},
+                {id: "014", name: "Daemonite", quantity: 1},
+                {id: "015", name: "Timber Wolf", quantity: 2},
+                {id: "016", name: "Giganta", quantity: 1},
+                {id: "017a", name: "Cheetah", quantity: 2},
+                {id: "018", name: "Ultra-Boy", quantity: 1},
+                {id: "019", name: "Amethyst", quantity: 1},
+                {id: "020", name: "Blok", quantity: 2},
+                {id: "021", name: "Wildfire", quantity: 2},
+                {id: "022", name: "Gates", quantity: 2},
+                {id: "023", name: "Mr. Majestic", quantity: 2},
+                {id: "024", name: "Lex Luthor", quantity: 1},
+                {id: "025", name: "Mano", quantity: 1},
+                {id: "027", name: "Kalibak", quantity: 1},
+                {id: "028", name: "Lightray", quantity: 1},
+                {id: "030", name: "Dawnstar", quantity: 1},
+                {id: "031", name: "Chameleon Girl", quantity: 1},
+                {id: "032", name: "Colossal Boy", quantity: 1},
+                {id: "033", name: "Stargirl", quantity: 1},
+                {id: "034", name: "Starman", quantity: 1},
+                {id: "041", name: "Universo", quantity: 1},
+                {id: "043", name: "Orion", quantity: 1},
+                {id: "044", name: "Darkseid", quantity: 1},
+                {id: "045", name: "Computo", quantity: 1},
+                {id: "201", name: "Cosmic Boy", quantity: 1},
+                {id: "206", name: "Triplicate Girl", quantity: 1},
+                {id: "207", name: "Shrinking Violet", quantity: 1}
+            ],
+            "Batman Classic TV": [
+                {id: "001", name: "Batman", quantity: 1},
+                {id: "003", name: "Robin", quantity: 1}
+            ],
+            "Man of Steel": [
+                {id: "001", name: "Superman", quantity: 1},
+                {id: "002", name: "Kryptonian Scientist", quantity: 4},
+                {id: "003", name: "General Zod", quantity: 2},
+                {id: "004", name: "Kryptonian Rebel", quantity: 3},
+                {id: "005", name: "Jor-El", quantity: 4},
+                {id: "006", name: "Kryptonian Warrior", quantity: 4},
+                {id: "007", name: "Lois Lane", quantity: 2},
+                {id: "008", name: "Soldier", quantity: 3},
+                {id: "009", name: "Clark Kent", quantity: 2},
+                {id: "011", name: "Jax-Ur", quantity: 1},
+                {id: "012", name: "Lara Lor-Van", quantity: 1}
+            ],
+            "Teen Titans": [
+                {id: "001", name: "Robin", quantity: 2},
+                {id: "004", name: "Psion", quantity: 2},
+                {id: "005a", name: "Gordanian", quantity: 1},
+                {id: "008", name: "Wonder Girl", quantity: 1},
+                {id: "009", name: "N.O.W.H.E.R.E. Soldier", quantity: 3},
+                {id: "013", name: "Solstice", quantity: 1},
+                {id: "014", name: "Osiris", quantity: 1},
+                {id: "016", name: "Grymm", quantity: 1},
+                {id: "020", name: "Fairchild", quantity: 1},
+                {id: "029", name: "Shimmer", quantity: 1},
+                {id: "032", name: "Dr. Light", quantity: 1},
+                {id: "035", name: "Terra", quantity: 1},
+                {id: "056", name: "Harvest", quantity: 1},
+                {id: "201", name: "Red Robin", quantity: 1},
+                {id: "202", name: "Superboy", quantity: 2},
+                {id: "203", name: "Wonder Girl", quantity: 1},
+                {id: "206", name: "Brother Blood Acolyte", quantity: 1}
+            ],
+            "Fast Forces: Streets of Gotham": [
+                {id: "001", name: "Oracle", quantity: 1},
+                {id: "002", name: "Lady Blackhawk", quantity: 1},
+                {id: "003", name: "Huntress", quantity: 1},
+                {id: "004", name: "Black Canary", quantity: 1},
+                {id: "005", name: "Hawk", quantity: 1},
+                {id: "006", name: "Dove", quantity: 1}
+            ],
+            "Batman: Streets of Gotham": [
+                {id: "003", name: "Black Canary", quantity: 1},
+                {id: "004", name: "GCPD Detective", quantity: 1},
+                {id: "006", name: "Blue Beetle", quantity: 1},
+                {id: "010", name: "Black Glove Demon", quantity: 1},
+                {id: "011", name: "Dr. Hurt", quantity: 2},
+                {id: "012", name: "Robin", quantity: 1},
+                {id: "013", name: "Batman", quantity: 3},
+                {id: "014", name: "Huntress", quantity: 1},
+                {id: "017", name: "Ice", quantity: 2},
+                {id: "019", name: "Red Hood", quantity: 1},
+                {id: "032", name: "Batman", quantity: 1},
+                {id: "043", name: "Katana", quantity: 1}
+            ],
+            "Batman": [
+                {id: "001", name: "Batman", quantity: 3},
+                {id: "002", name: "Bruce Wayne", quantity: 3},
+                {id: "003", name: "Arkham Asylum Guard", quantity: 2},
+                {id: "004", name: "The Joker Thug", quantity: 3},
+                {id: "005", name: "Beast Boy (Dolphin)", quantity: 1},
+                {id: "007a", name: "Catwoman", quantity: 1},
+                {id: "008", name: "Nightwing", quantity: 1},
+                {id: "009", name: "Red Robin", quantity: 4},
+                {id: "010", name: "Blackbat", quantity: 2},
+                {id: "011", name: "Katana", quantity: 3},
+                {id: "013", name: "The Joker", quantity: 2},
+                {id: "015", name: "Nightrunner", quantity: 3},
+                {id: "016", name: "Batgirl", quantity: 2},
+                {id: "017", name: "Robin", quantity: 1},
+                {id: "018", name: "Aaron Cash", quantity: 1},
+                {id: "020", name: "KGBeast", quantity: 1},
+                {id: "022", name: "Two-Face", quantity: 4},
+                {id: "023a", name: "Sasha Bordeaux", quantity: 1},
+                {id: "025", name: "Batgirl", quantity: 2},
+                {id: "027", name: "Dick Grayson", quantity: 2},
+                {id: "030", name: "El Gaucho", quantity: 1},
+                {id: "031", name: "Alfred Pennyworth", quantity: 2},
+                {id: "032", name: "Big Barda", quantity: 1},
+                {id: "034", name: "Poison Ivy", quantity: 1},
+                {id: "036", name: "Batwoman", quantity: 2},
+                {id: "040", name: "Halo", quantity: 1},
+                {id: "100", name: "Nightwing and Batgirl", quantity: 1},
+                {id: "101", name: "Renegade", quantity: 1},
+                {id: "203", name: "Hired Goon", quantity: 2},
+                {id: "204", name: "Catwoman", quantity: 1},
+                {id: "205", name: "Nightwing", quantity: 1},
+                {id: "206", name: "Red Robin", quantity: 1},
+                {id: "207", name: "The Joker", quantity: 1},
+                {id: "208", name: "Harley Quinn", quantity: 1}
+            ],
+            "DC Heroclix 10th Anniversary": [
+                {id: "001", name: "Batman", quantity: 1},
+                {id: "002", name: "Wonder Woman", quantity: 1},
+                {id: "008", name: "Catwoman", quantity: 1},
+                {id: "014", name: "Robin", quantity: 1}
+            ],
+            "Justice League 52": [
+                {id: "002", name: "Batman", quantity: 1},
+                {id: "005", name: "Aquaman", quantity: 1},
+                {id: "011", name: "Hawkman", quantity: 1},
+                {id: "012", name: "Shade the Changing Man", quantity: 1},
+                {id: "015", name: "Mindwarp", quantity: 1}
+            ],
+            "The Dark Knight Rises": [
+                {id: "001", name: "The Dark Knight", quantity: 1},
+                {id: "003", name: "Bruce Wayne", quantity: 1},
+                {id: "004", name: "Arkham Asylum Inmate", quantity: 1},
+                {id: "009", name: "Two-Face", quantity: 1},
+                {id: "010", name: "Falcone Bodyguard", quantity: 1},
+                {id: "014", name: "Bane", quantity: 1},
+                {id: "016", name: "Salvatore Maroni", quantity: 1},
+                {id: "018", name: "Rachel Dawes", quantity: 1},
+                {id: "020", name: "The Joker as Sgt.", quantity: 1},
+                {id: "100", name: "Batman", quantity: 1}
+            ],
+            "Fast Forces: War of the Light": [
+                {id: "003", name: "Sinestro", quantity: 1}
+            ],
+            "Superman": [
+                {id: "001", name: "Superman", quantity: 1},
+                {id: "002", name: "Kryptonian Soldier", quantity: 1},
+                {id: "003", name: "Kryptonian Infiltrator", quantity: 3},
+                {id: "004", name: "Intergang Underboss", quantity: 2},
+                {id: "005", name: "Seven Deadly Brothers", quantity: 1},
+                {id: "006", name: "All-Star Bizarro", quantity: 2},
+                {id: "007", name: "Star Boy", quantity: 1},
+                {id: "008", name: "Brainiac 5", quantity: 3},
+                {id: "009", name: "Lois Lane, Superwoman", quantity: 2},
+                {id: "010", name: "Supergirl", quantity: 1},
+                {id: "011", name: "Gangbuster", quantity: 1},
+                {id: "012", name: "Livewire", quantity: 2},
+                {id: "013", name: "Maxwell Lord", quantity: 1},
+                {id: "014", name: "Mercy Graves", quantity: 3},
+                {id: "015", name: "Lex Luthor", quantity: 2},
+                {id: "016", name: "Element Woman", quantity: 2},
+                {id: "018", name: "Steel", quantity: 1},
+                {id: "019", name: "Magog", quantity: 1},
+                {id: "020", name: "Bruno Mannheim", quantity: 1},
+                {id: "021", name: "Human Target", quantity: 1},
+                {id: "022", name: "Sun Boy", quantity: 1},
+                {id: "023", name: "Earth Man", quantity: 1},
+                {id: "025", name: "Matter-Eater Lad", quantity: 1},
+                {id: "026", name: "Lucy Lane, Superwoman", quantity: 2},
+                {id: "027", name: "Parasite", quantity: 1},
+                {id: "028", name: "Manchester Black", quantity: 1},
+                {id: "029", name: "Silver Banshee", quantity: 1},
+                {id: "030", name: "Hope Taya", quantity: 2},
+                {id: "031", name: "Non", quantity: 2},
+                {id: "037", name: "Libra", quantity: 2},
+                {id: "039", name: "Wildfire", quantity: 1},
+                {id: "044", name: "Ursa", quantity: 1},
+                {id: "048", name: "Aquaman", quantity: 1},
+                {id: "050", name: "Imperiex", quantity: 1},
+                {id: "100", name: "Superman Robot", quantity: 1}
+            ],
+            "Brave and the Bold": [
+                {id: "046", name: "Batman and Green Arrow", quantity: 1}
+            ],
+            "Arkham Asylum": [
+                {id: "036", name: "Zoom", quantity: 1}
+            ],
+            "Crisis": [
+                {id: "055", name: "Sinestro", quantity: 1}
+            ],
+            "Justice League": [
+                {id: "007", name: "Icicle", quantity: 1},
+                {id: "008", name: "Lex Luthor", quantity: 1},
+                {id: "010", name: "Bulleteer", quantity: 1},
+                {id: "017", name: "Parasite", quantity: 1},
+                {id: "020", name: "Black Hand", quantity: 2},
+                {id: "022", name: "Professor Ivo", quantity: 1},
+                {id: "023", name: "Toyman", quantity: 1},
+                {id: "027", name: "The Flash", quantity: 2},
+                {id: "037", name: "Wonder Woman", quantity: 1},
+                {id: "043", name: "Dr. Polaris", quantity: 1},
+                {id: "047", name: "Hourman", quantity: 1}
+            ],
+            "Legion of Super Heroes": [
+                {id: "008", name: "Shrinking Violet", quantity: 1}
+            ],
+            "Origin": [
+                {id: "210", name: "Detective John Jones", quantity: 1}
+            ],
+            "Giants": [
+                {id: "002", name: "Validus", quantity: 1}
+            ],
+            "Collateral Damage": [
+                {id: "021", name: "Katana", quantity: 1}
+            ],
+            "Icons": [
+                {id: "008", name: "Scarecrow", quantity: 1},
+                {id: "022", name: "Starfire", quantity: 1},
+                {id: "025", name: "Aquaman", quantity: 1},
+                {id: "031", name: "Wonder Woman", quantity: 1},
+                {id: "052", name: "Terra", quantity: 1}
+            ],
+            "Legacy": [
+                {id: "008", name: "Enchantress", quantity: 1},
+                {id: "021", name: "Stargirl", quantity: 1},
+                {id: "026", name: "Power Girl", quantity: 1},
+                {id: "053", name: "Obsidian", quantity: 1},
+                {id: "056", name: "Jade", quantity: 1},
+                {id: "064", name: "Superboy", quantity: 1},
+                {id: "065", name: "Superboy", quantity: 2},
+                {id: "066", name: "Superboy", quantity: 1}
+            ],
+            "Cosmic Justice": [
+                {id: "042", name: "Troia", quantity: 1},
+                {id: "065", name: "Starman", quantity: 1},
+                {id: "067", name: "Firestorm", quantity: 1},
+                {id: "079", name: "Circe", quantity: 1}
+            ],
+            "Hypertime": [
+                {id: "008", name: "Checkmate Agent", quantity: 1},
+                {id: "016", name: "Intergang Medic", quantity: 1},
+                {id: "018", name: "Intergang Medic", quantity: 1},
+                {id: "076", name: "Black Manta", quantity: 1}
+            ]
+        };
+
+        let figureData = {};
+        let totalValue = 0;
+
+        // Initialize the application
+        function initializeApp() {
+            loadStoredData();
+            renderCollection();
+            updateStats();
+        }
+
+        // Load stored pricing and notes data
+        function loadStoredData() {
+            const stored = localStorage.getItem('heroclix-data');
+            if (stored) {
+                figureData = JSON.parse(stored);
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('heroclix-data', JSON.stringify(figureData));
+        }
+
+        // Render the entire collection
+        function renderCollection(filteredData = null) {
+            const container = document.getElementById('collectionGrid');
+            const data = filteredData || collectionData;
+            container.innerHTML = '';
+
+            Object.entries(data).forEach(([setName, figures]) => {
+                const setDiv = document.createElement('div');
+                setDiv.className = 'set-section';
+                
+                const totalFigures = figures.reduce((sum, fig) => sum + fig.quantity, 0);
+                const setValueSum = figures.reduce((sum, fig) => {
+                    const key = `${setName}-${fig.id}`;
+                    const price = figureData[key]?.price || 0;
+                    return sum + (price * fig.quantity);
+                }, 0);
+
+                setDiv.innerHTML = `
+                    <div class="set-header">
+                        <span>${setName}</span>
+                        <div class="set-stats">
+                            ${totalFigures} figures | Est. $${setValueSum.toFixed(2)}
+                        </div>
+                    </div>
+                    <div class="figures-grid" id="set-${setName.replace(/\s+/g, '-')}">
+                    </div>
+                `;
+                
+                container.appendChild(setDiv);
+                
+                const figuresGrid = setDiv.querySelector('.figures-grid');
+                figures.forEach(figure => {
+                    const figureCard = createFigureCard(setName, figure);
+                    figuresGrid.appendChild(figureCard);
+                });
+            });
+        }
+
+        // Create individual figure card
+        function createFigureCard(setName, figure) {
+            const key = `${setName}-${figure.id}`;
+            const data = figureData[key] || {};
+            
+            const card = document.createElement('div');
+            card.className = 'figure-card';
+            
+            card.innerHTML = `
+                <div class="figure-header">
+                    <div class="figure-name">${figure.id} - ${figure.name}</div>
+                    <div class="quantity-badge">×${figure.quantity}</div>
+                    ${data.sold ? '<span class="sold-indicator">SOLD</span>' : ''}
+                </div>
+                
+                <div class="price-display" id="price-${key}">
+                    ${data.price ? 
+                        `<div class="price-amount">$${data.price.toFixed(2)} each</div>
+                         <div>Total: $${(data.price * figure.quantity).toFixed(2)}</div>` 
+                        : '<div class="loading">Price not checked</div>'
+                    }
+                </div>
+                
+                <input type="text" class="notes-input" placeholder="Notes..." 
+                       value="${data.notes || ''}" 
+                       onchange="updateNotes('${key}', this.value)">
+                
+                <div class="figure-actions">
+                    <button class="btn btn-primary btn-small" onclick="getEbayPrice('${key}', '${setName}', '${figure.name}', '${figure.id}')">
+                        💰 Check Price
+                    </button>
+                    <button class="btn btn-secondary btn-small" onclick="toggleSold('${key}')">
+                        ${data.sold ? '📦 Mark Available' : '✅ Mark Sold'}
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Get eBay price for a specific figure
+        async function getEbayPrice(key, setName, figureName, figureId) {
+            const priceDisplay = document.getElementById(`price-${key}`);
+            priceDisplay.innerHTML = '<div class="loading">🔍 Searching eBay...</div>';
+            
+            try {
+                // Search for the figure on eBay
+                const searchQuery = `HeroClix ${setName} ${figureName} ${figureId}`;
+                const response = await fetch(`https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(searchQuery)}&limit=10`, {
+                    headers: {
+                        'Authorization': 'Bearer YOUR_EBAY_TOKEN',
+                        'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const prices = data.itemSummaries?.map(item => parseFloat(item.price.value)) || [];
+                    
+                    if (prices.length > 0) {
+                        const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+                        updatePrice(key, avgPrice);
+                    } else {
+                        throw new Error('No results found');
+                    }
+                } else {
+                    throw new Error('eBay API error');
+                }
+            } catch (error) {
+                // Fallback: Open eBay search in new tab
+                const searchQuery = `HeroClix ${setName} ${figureName} ${figureId}`;
+                const ebayUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(searchQuery)}&_sacat=0&LH_Sold=1&LH_Complete=1`;
+                window.open(ebayUrl, '_blank');
+                
+                priceDisplay.innerHTML = `
+                    <div class="error">Manual price check opened in new tab</div>
+                    <input type="number" step="0.01" placeholder="Enter price..." 
+                           onchange="updatePrice('${key}', parseFloat(this.value))">
+                `;
+            }
+        }
+
+        // Update price for a figure
+        function updatePrice(key, price) {
+            if (!figureData[key]) figureData[key] = {};
+            figureData[key].price = price;
+            saveData();
+            
+            const priceDisplay = document.getElementById(`price-${key}`);
+            const figure = findFigureByKey(key);
+            
+            if (figure) {
+                priceDisplay.innerHTML = `
+                    <div class="price-amount">$${price.toFixed(2)} each</div>
+                    <div>Total: $${(price * figure.quantity).toFixed(2)}</div>
+                `;
+            }
+            
+            updateStats();
+        }
+
+        // Update notes for a figure
+        function updateNotes(key, notes) {
+            if (!figureData[key]) figureData[key] = {};
+            figureData[key].notes = notes;
+            saveData();
+        }
+
+        // Toggle sold status
+        function toggleSold(key) {
+            if (!figureData[key]) figureData[key] = {};
+            figureData[key].sold = !figureData[key].sold;
+            saveData();
+            renderCollection(); // Re-render to update display
+            updateStats();
+        }
+
+        // Find figure by key
+        function findFigureByKey(key) {
+            for (const [setName, figures] of Object.entries(collectionData)) {
+                for (const figure of figures) {
+                    if (`${setName}-${figure.id}` === key) {
+                        return figure;
+                    }
+                }
+            }
+            return null;
+        }
+
+        // Update statistics
+        function updateStats() {
+            let totalFigures = 0;
+            let totalSets = Object.keys(collectionData).length;
+            let totalValue = 0;
+
+            Object.entries(collectionData).forEach(([setName, figures]) => {
+                figures.forEach(figure => {
+                    totalFigures += figure.quantity;
+                    const key = `${setName}-${figure.id}`;
+                    const data = figureData[key];
+                    if (data?.price && !data.sold) {
+                        totalValue += data.price * figure.quantity;
+                    }
+                });
+            });
+
+            document.getElementById('totalFigures').textContent = totalFigures;
+            document.getElementById('totalSets').textContent = totalSets;
+            document.getElementById('totalValue').textContent = `$${totalValue.toFixed(0)}`;
+            document.getElementById('totalValueDisplay').textContent = `Total Value: $${totalValue.toFixed(2)}`;
+        }
+
+        // Search collection
+        function searchCollection() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (!query) {
+                renderCollection();
+                return;
+            }
+
+            const filtered = {};
+            Object.entries(collectionData).forEach(([setName, figures]) => {
+                const matchingFigures = figures.filter(figure => 
+                    figure.name.toLowerCase().includes(query) ||
+                    setName.toLowerCase().includes(query) ||
+                    figure.id.includes(query)
+                );
+                
+                if (matchingFigures.length > 0) {
+                    filtered[setName] = matchingFigures;
+                }
+            });
+
+            renderCollection(filtered);
+        }
+
+        // Export collection data
+        function exportCollection() {
+            const csvData = ['Set,ID,Name,Quantity,Price,Total,Status,Notes'];
+            
+            Object.entries(collectionData).forEach(([setName, figures]) => {
+                figures.forEach(figure => {
+                    const key = `${setName}-${figure.id}`;
+                    const data = figureData[key] || {};
+                    const price = data.price || 0;
+                    const total = price * figure.quantity;
+                    const status = data.sold ? 'Sold' : 'Available';
+                    const notes = (data.notes || '').replace(/,/g, ';');
+                    
+                    csvData.push(`"${setName}","${figure.id}","${figure.name}",${figure.quantity},${price},${total},"${status}","${notes}"`);
+                });
+            });
+
+            const blob = new Blob([csvData.join('\n')], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'heroclix-collection.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Get prices for all items (batch operation)
+        function getPricesForAll() {
+            if (confirm('This will open multiple eBay tabs for price checking. Continue?')) {
+                let delay = 0;
+                Object.entries(collectionData).forEach(([setName, figures]) => {
+                    figures.forEach(figure => {
+                        const key = `${setName}-${figure.id}`;
+                        if (!figureData[key]?.price) {
+                            setTimeout(() => {
+                                getEbayPrice(key, setName, figure.name, figure.id);
+                            }, delay);
+                            delay += 2000; // 2 second delay between requests
+                        }
+                    });
+                });
+            }
+        }
+
+        // Show high value items only
+        function showHighValue() {
+            const filtered = {};
+            Object.entries(collectionData).forEach(([setName, figures]) => {
+                const highValueFigures = figures.filter(figure => {
+                    const key = `${setName}-${figure.id}`;
+                    const data = figureData[key];
+                    return data?.price && data.price >= 10; // $10+ items
+                });
+                
+                if (highValueFigures.length > 0) {
+                    filtered[setName] = highValueFigures;
+                }
+            });
+
+            renderCollection(filtered);
+        }
+
+        // Show unsold items only
+        function showUnsold() {
+            const filtered = {};
+            Object.entries(collectionData).forEach(([setName, figures]) => {
+                const unsoldFigures = figures.filter(figure => {
+                    const key = `${setName}-${figure.id}`;
+                    const data = figureData[key];
+                    return !data?.sold;
+                });
+                
+                if (unsoldFigures.length > 0) {
+                    filtered[setName] = unsoldFigures;
+                }
+            });
+
+            renderCollection(filtered);
+        }
+
+        // Clear all stored data
+        function clearAll() {
+            if (confirm('This will clear all pricing and notes data. Are you sure?')) {
+                localStorage.removeItem('heroclix-data');
+                figureData = {};
+                renderCollection();
+                updateStats();
+            }
+        }
+
+        // Initialize app when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Add search on Enter key
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchCollection();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
