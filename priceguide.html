@@ -301,12 +301,16 @@
             <div class="search-bar">
                 <input type="text" class="search-input" id="searchInput" placeholder="Search your collection...">
                 <button class="btn btn-primary" onclick="searchCollection()">🔍 Search</button>
-                <button class="btn btn-secondary" onclick="exportCollection()">📊 Export</button>
+                <button class="btn btn-secondary" onclick="exportForSelling()">📊 Export</button>
             </div>
             <div class="filters">
+                <button class="btn btn-secondary btn-small" onclick="showEstimatedPrices()">💡 Pre-Priced Items</button>
                 <button class="btn btn-secondary btn-small" onclick="getPricesForAll()">💰 Get All Prices</button>
                 <button class="btn btn-secondary btn-small" onclick="showHighValue()">💎 High Value Items</button>
                 <button class="btn btn-secondary btn-small" onclick="showUnsold()">📦 Available Items</button>
+                <button class="btn btn-secondary btn-small" onclick="showSoldItems()">✅ Sold Items</button>
+                <button class="btn btn-secondary btn-small" onclick="generateListings()">📝 Generate Listings</button>
+                <button class="btn btn-secondary btn-small" onclick="exportForSelling()">📊 Export for Selling</button>
                 <button class="btn btn-secondary btn-small" onclick="clearAll()">🗑️ Clear Data</button>
             </div>
         </div>
@@ -1074,11 +1078,780 @@
         let figureData = {};
         let totalValue = 0;
 
+        // Comprehensive estimated market values for ALL figures
+        const estimatedPrices = {
+            // === THE HOBBIT: THE DESOLATION OF SMAUG ===
+            "The Hobbit: The Desolation of Smaug-008": { price: 8.00, notes: "Azog - LOTR/Hobbit villain collectible" },
+            
+            // === IRON MAIDEN ===
+            "Iron Maiden-001": { price: 12.00, notes: "Iron Maiden band tie-in - Music collectible" },
+            
+            // === ASSASSIN'S CREED BROTHERHOOD ===
+            "Assassin's Creed Brotherhood-001": { price: 6.00, notes: "Ezio - Main protagonist" },
+            "Assassin's Creed Brotherhood-002": { price: 4.00, notes: "Mario Auditore - Supporting character" },
+            "Assassin's Creed Brotherhood-003": { price: 4.00, notes: "La Volpe - Thief ally" },
+            "Assassin's Creed Brotherhood-004": { price: 4.00, notes: "Bartolomeo - Mercenary leader" },
+            "Assassin's Creed Brotherhood-005": { price: 5.00, notes: "Cesare Borgia - Main villain" },
+            "Assassin's Creed Brotherhood-006": { price: 4.00, notes: "Octavian - Templar" },
+            
+            // === ASSASSIN'S CREED REVELATIONS ===
+            "Assassin's Creed Revelations-001": { price: 6.00, notes: "Ezio - Popular protagonist" },
+            "Assassin's Creed Revelations-002": { price: 4.00, notes: "Prince Ahmet - Royal antagonist" },
+            "Assassin's Creed Revelations-003": { price: 4.00, notes: "Yusuf - Assassin ally" },
+            "Assassin's Creed Revelations-004": { price: 3.00, notes: "The Guardian - Generic title" },
+            "Assassin's Creed Revelations-005": { price: 3.00, notes: "The Bombardier - Generic title" },
+            "Assassin's Creed Revelations-006": { price: 3.00, notes: "The Vanguard - Generic title" },
+            
+            // === SDCC COMBO-PACK ===
+            "SDCC Combo-Pack-003": { price: 15.00, notes: "Morgan Spurlock - SDCC exclusive" },
+            "SDCC Combo-Pack-004": { price: 15.00, notes: "Harry Knowles - SDCC exclusive" },
+            
+            // === LORD OF THE RINGS ===
+            "Lord of the Rings-207": { price: 12.49, notes: "Witch-King of Angmar - LOTR villain collectible" },
+            
+            // === GUARDIANS OF THE GALAXY 2 MOVIE ===
+            "Guardians of the Galaxy 2 Movie-010": { price: 10.00, notes: "Rocket and Groot - MCU duo popularity" },
+            
+            // === SUPERIOR FOES OF SPIDER-MAN ===
+            "Superior Foes of Spider-Man-045": { price: 4.00, notes: "Lizard - Spider-Man villain" },
+            
+            // === CAPTAIN AMERICA: CIVIL WAR STARTER ===
+            "Captain America: Civil War Starter-001": { price: 8.00, notes: "Captain America - MCU hero" },
+            "Captain America: Civil War Starter-002": { price: 8.00, notes: "Iron Man - MCU popularity" },
+            "Captain America: Civil War Starter-003": { price: 6.00, notes: "Black Widow - MCU hero" },
+            "Captain America: Civil War Starter-004": { price: 6.00, notes: "Falcon - MCU supporting hero" },
+            "Captain America: Civil War Starter-005": { price: 8.00, notes: "Winter Soldier - Popular anti-hero" },
+            "Captain America: Civil War Starter-006": { price: 12.00, notes: "Black Panther - MCU breakout star" },
+            
+            // === AVENGERS ASSEMBLE ===
+            "Avengers Assemble-066": { price: 5.00, notes: "Goliath - Size-changing hero" },
+            
+            // === GUARDIANS OF THE GALAXY ===
+            "Guardians of the Galaxy-001": { price: 8.00, notes: "Gamora - MCU Guardian" },
+            "Guardians of the Galaxy-002": { price: 7.00, notes: "Drax the Destroyer - MCU Guardian" },
+            "Guardians of the Galaxy-003": { price: 6.00, notes: "Mantis - MCU character" },
+            "Guardians of the Galaxy-004": { price: 5.00, notes: "Starhawk - Classic Guardian" },
+            "Guardians of the Galaxy-005": { price: 4.00, notes: "Major Victory - Classic Guardian" },
+            "Guardians of the Galaxy-006b": { price: 3.00, notes: "Chitauri Warleader - Army builder" },
+            "Guardians of the Galaxy-007a": { price: 2.50, notes: "Kree Private - Army builder" },
+            "Guardians of the Galaxy-008a": { price: 3.00, notes: "Raptor - Nova Corps" },
+            "Guardians of the Galaxy-009a": { price: 4.00, notes: "Spaceknight - ROM tie-in" },
+            "Guardians of the Galaxy-009b": { price: 4.00, notes: "Ikon - Spaceknight" },
+            "Guardians of the Galaxy-010a": { price: 3.00, notes: "Dire Wraith - ROM villain" },
+            "Guardians of the Galaxy-010b": { price: 4.00, notes: "Dire Wraith Queen - ROM villain" },
+            "Guardians of the Galaxy-011a": { price: 2.50, notes: "Spartoi Elite - Army builder" },
+            "Guardians of the Galaxy-011b": { price: 3.00, notes: "Jason of Sparta - Star-Lord's father" },
+            "Guardians of the Galaxy-012a": { price: 2.50, notes: "Rigellian Colonizer - Cosmic army" },
+            "Guardians of the Galaxy-013a": { price: 3.00, notes: "Recorder - Robot observer" },
+            "Guardians of the Galaxy-014a": { price: 2.50, notes: "Badoon - Alien army" },
+            "Guardians of the Galaxy-014b": { price: 3.00, notes: "Brother Royal - Badoon leader" },
+            "Guardians of the Galaxy-015": { price: 6.00, notes: "Triton - Inhuman royal" },
+            "Guardians of the Galaxy-016": { price: 8.00, notes: "Nebula - MCU villain/anti-hero" },
+            "Guardians of the Galaxy-018": { price: 3.00, notes: "Alpha Primitive - Inhuman servant" },
+            "Guardians of the Galaxy-019a": { price: 8.00, notes: "Captain Marvel - Cosmic hero" },
+            "Guardians of the Galaxy-019b": { price: 5.00, notes: "Dr. Minerva - Kree geneticist" },
+            "Guardians of the Galaxy-020": { price: 7.00, notes: "Ronan the Accuser - MCU villain" },
+            "Guardians of the Galaxy-021": { price: 5.00, notes: "Korath the Pursuer - MCU villain" },
+            "Guardians of the Galaxy-023": { price: 8.00, notes: "Yondu - MCU Guardian" },
+            "Guardians of the Galaxy-024": { price: 5.00, notes: "Aleta - Classic Guardian" },
+            "Guardians of the Galaxy-025": { price: 8.00, notes: "Ebony Maw - Black Order member" },
+            "Guardians of the Galaxy-026": { price: 6.00, notes: "Crystal - Inhuman royal" },
+            "Guardians of the Galaxy-028": { price: 6.00, notes: "Karnak - Inhuman royal" },
+            "Guardians of the Galaxy-029": { price: 5.00, notes: "Moondragon - Cosmic hero" },
+            "Guardians of the Galaxy-030": { price: 8.00, notes: "Star-Lord - MCU leader" },
+            "Guardians of the Galaxy-031": { price: 6.00, notes: "Nova - Cosmic hero" },
+            "Guardians of the Galaxy-032": { price: 5.00, notes: "Starfox - Eternal" },
+            "Guardians of the Galaxy-036": { price: 10.00, notes: "Black Bolt - Inhuman king" },
+            "Guardians of the Galaxy-037": { price: 6.00, notes: "Lockjaw - Inhuman dog" },
+            "Guardians of the Galaxy-040": { price: 5.00, notes: "Martyr - Cosmic hero" },
+            "Guardians of the Galaxy-042": { price: 12.00, notes: "Gorr the God Butcher - Thor villain" },
+            "Guardians of the Galaxy-046": { price: 8.00, notes: "Black Dwarf - Black Order member" },
+            "Guardians of the Galaxy-047a": { price: 12.00, notes: "Thanos - Major MCU villain" },
+            "Guardians of the Galaxy-048": { price: 8.00, notes: "Supergiant - Black Order member" },
+            "Guardians of the Galaxy-049": { price: 8.00, notes: "Corvus Glaive - Black Order member" },
+            "Guardians of the Galaxy-057": { price: 15.00, notes: "Beyonder - Cosmic entity" },
+            "Guardians of the Galaxy-058": { price: 5.00, notes: "Mentor - Eternal" },
+            
+            // === DEADPOOL ===
+            "Deadpool-003": { price: 8.00, notes: "Dogpool - Deadpool Corps member" },
+            "Deadpool-004": { price: 2.50, notes: "Secret Empire Agent - Generic" },
+            "Deadpool-007a": { price: 3.00, notes: "Weapon X Scientist - Generic" },
+            "Deadpool-008": { price: 5.00, notes: "Colleen Wing - Iron Fist ally" },
+            "Deadpool-009": { price: 5.00, notes: "Misty Knight - Heroes for Hire" },
+            "Deadpool-011": { price: 4.00, notes: "Silver Sable - Spider-Man ally" },
+            "Deadpool-013": { price: 3.00, notes: "Anaconda - Serpent Society" },
+            "Deadpool-014": { price: 4.00, notes: "Hammerhead - Spider-Man villain" },
+            "Deadpool-015": { price: 6.00, notes: "Daredevil - Netflix popularity" },
+            "Deadpool-016": { price: 3.00, notes: "Animus - Lesser known character" },
+            "Deadpool-018": { price: 4.00, notes: "Blind Al - Deadpool supporting cast" },
+            "Deadpool-020": { price: 4.00, notes: "Weasel - Deadpool ally" },
+            "Deadpool-021": { price: 3.00, notes: "Outlaw - Deadpool ally" },
+            "Deadpool-026": { price: 4.00, notes: "Agent Zero - Weapon X" },
+            "Deadpool-028": { price: 4.00, notes: "Siryn - X-Force member" },
+            "Deadpool-031": { price: 5.00, notes: "Elektra - Daredevil connection" },
+            
+            // === THE INVINCIBLE IRON MAN ===
+            "The Invincible Iron Man-005": { price: 2.50, notes: "Hammer Industries Drone - Army builder" },
+            "The Invincible Iron Man-006": { price: 4.00, notes: "Dreadnought - Robot enemy" },
+            "The Invincible Iron Man-020": { price: 5.00, notes: "Detroit Steel - Armor Wars" },
+            "The Invincible Iron Man-021": { price: 3.00, notes: "Sasha Hammer - Supporting villain" },
+            "The Invincible Iron Man-030": { price: 8.00, notes: "Mandarin - Iron Man's nemesis" },
+            "The Invincible Iron Man-036": { price: 6.00, notes: "Ghost - Iron Man villain" },
+            "The Invincible Iron Man-210": { price: 4.00, notes: "Northstar - X-Men speedster" },
+            
+            // === THOR: THE DARK WORLD ===
+            "Thor: The Dark World-101": { price: 8.00, notes: "Thor - MCU hero" },
+            "Thor: The Dark World-102": { price: 6.00, notes: "Malekith - MCU villain" },
+            "Thor: The Dark World-104": { price: 6.00, notes: "Loki - Fan favorite villain" },
+            
+            // === WOLVERINE AND THE X-MEN ===
+            "Wolverine and the X-Men-001": { price: 3.50, notes: "Wolverine - Popular X-Men character" },
+            "Wolverine and the X-Men-002": { price: 4.00, notes: "Colossus - X-Men powerhouse" },
+            "Wolverine and the X-Men-003": { price: 3.50, notes: "Shadowcat - Popular X-Men" },
+            "Wolverine and the X-Men-004": { price: 3.00, notes: "Mirage - New Mutants" },
+            "Wolverine and the X-Men-007": { price: 2.00, notes: "Shi'ar Soldier - Army builder" },
+            "Wolverine and the X-Men-008": { price: 3.50, notes: "Dazzler - X-Men performer" },
+            "Wolverine and the X-Men-010": { price: 4.00, notes: "Shatterstar - X-Force warrior" },
+            "Wolverine and the X-Men-011a": { price: 4.00, notes: "Deathlok - Cyborg character" },
+            "Wolverine and the X-Men-012": { price: 3.00, notes: "Strong Guy - X-Factor" },
+            "Wolverine and the X-Men-013": { price: 3.50, notes: "Multiple Man - X-Factor" },
+            "Wolverine and the X-Men-014": { price: 2.50, notes: "Rictor - X-Force member" },
+            "Wolverine and the X-Men-015": { price: 2.50, notes: "Cyber - Wolverine villain" },
+            "Wolverine and the X-Men-016": { price: 4.00, notes: "Cyclops - X-Men leader" },
+            "Wolverine and the X-Men-017": { price: 5.00, notes: "Jean Grey - Phoenix connection" },
+            "Wolverine and the X-Men-018": { price: 3.00, notes: "Sunspot - New Mutants" },
+            "Wolverine and the X-Men-019": { price: 3.00, notes: "Starbolt - Shi'ar Imperial Guard" },
+            "Wolverine and the X-Men-020": { price: 4.00, notes: "White King - Hellfire Club" },
+            "Wolverine and the X-Men-021": { price: 3.00, notes: "Flatman - Great Lakes Avengers" },
+            "Wolverine and the X-Men-025": { price: 4.00, notes: "Polaris - X-Men magnetic powers" },
+            "Wolverine and the X-Men-028": { price: 3.50, notes: "Kid Omega - Student mutant" },
+            "Wolverine and the X-Men-029": { price: 5.00, notes: "Sauron - X-Men dinosaur villain" },
+            "Wolverine and the X-Men-035": { price: 4.00, notes: "Black King - Hellfire Club" },
+            "Wolverine and the X-Men-041": { price: 4.00, notes: "Spiral - X-Men villain" },
+            "Wolverine and the X-Men-203": { price: 5.00, notes: "Havok - Cyclops' brother" },
+            "Wolverine and the X-Men-205": { price: 3.50, notes: "Multiple Man - Rare version" },
+            "Wolverine and the X-Men-206": { price: 3.00, notes: "Shi'ar Guard - Rare army" },
+            "Wolverine and the X-Men-210": { price: 7.00, notes: "Lady Deathstrike - Wolverine enemy" },
+            
+            // === FEAR ITSELF ===
+            "Fear Itself-001": { price: 2.50, notes: "Thule Society Priest - Generic cult" },
+            "Fear Itself-004": { price: 3.00, notes: "Prodigy - Young Avenger" },
+            "Fear Itself-005": { price: 5.00, notes: "Valkyrie - Thor ally" },
+            "Fear Itself-006": { price: 4.00, notes: "Red She-Hulk - Hulk family" },
+            "Fear Itself-008": { price: 4.00, notes: "Titania - She-Hulk villain" },
+            "Fear Itself-009": { price: 4.00, notes: "Sin - Red Skull's daughter" },
+            "Fear Itself-010": { price: 3.00, notes: "Speedball - New Warriors" },
+            "Fear Itself-024": { price: 6.00, notes: "Greithoth - Worthy/Asgardian" },
+            "Fear Itself-200": { price: 8.00, notes: "Skadi - Fear Itself villain" },
+            
+            // === IRON MAN 3 ===
+            "Iron Man 3-001": { price: 5.00, notes: "Iron Man Mk 7 - MCU armor" },
+            "Iron Man 3-004": { price: 6.00, notes: "Mandarin - Iron Man's nemesis" },
+            "Iron Man 3-005": { price: 2.50, notes: "Extremis Soldier - Army builder" },
+            "Iron Man 3-006": { price: 4.00, notes: "Tony Stark - Civilian identity" },
+            "Iron Man 3-007": { price: 4.00, notes: "Pepper Potts - MCU character" },
+            "Iron Man 3-008": { price: 5.00, notes: "Aldrich Killian - MCU villain" },
+            "Iron Man 3-009": { price: 6.00, notes: "Iron Man Mk 17 - Stealth armor" },
+            "Iron Man 3-101": { price: 8.00, notes: "Iron Man Mk 42 - MCU flagship armor" },
+            "Iron Man 3-102": { price: 8.00, notes: "Iron Patriot - War Machine variant" },
+            
+            // === AMAZING SPIDER-MAN ===
+            "Amazing Spider-Man-001a": { price: 6.00, notes: "Spider-Man - Always popular" },
+            "Amazing Spider-Man-002": { price: 2.00, notes: "Shocker - Spider-Man villain" },
+            "Amazing Spider-Man-003": { price: 4.00, notes: "Dagger - Cloak and Dagger" },
+            "Amazing Spider-Man-004": { price: 5.00, notes: "Blade - Vampire hunter" },
+            "Amazing Spider-Man-005": { price: 8.00, notes: "Dr. Strange - Sorcerer Supreme" },
+            "Amazing Spider-Man-007": { price: 4.00, notes: "Johnny Blaze - Ghost Rider" },
+            "Amazing Spider-Man-008": { price: 3.00, notes: "Doctor Druid - Occult hero" },
+            "Amazing Spider-Man-009": { price: 4.00, notes: "Daimon Hellstrom - Son of Satan" },
+            "Amazing Spider-Man-010": { price: 3.00, notes: "Frankenstein's Monster - Horror" },
+            "Amazing Spider-Man-011": { price: 2.50, notes: "Living Mummy - Horror character" },
+            "Amazing Spider-Man-012": { price: 2.50, notes: "Vampire - Generic horror" },
+            "Amazing Spider-Man-013a": { price: 3.00, notes: "Frank Drake - Vampire hunter" },
+            "Amazing Spider-Man-014": { price: 3.00, notes: "Werewolf - Horror character" },
+            "Amazing Spider-Man-015": { price: 3.00, notes: "Werewolf By Night - Horror hero" },
+            "Amazing Spider-Man-016": { price: 6.00, notes: "Dracula - Classic vampire" },
+            "Amazing Spider-Man-018": { price: 4.00, notes: "Scarlet Spider - Spider-Man clone" },
+            "Amazing Spider-Man-019": { price: 4.00, notes: "Vulture - Spider-Man villain" },
+            "Amazing Spider-Man-020": { price: 4.00, notes: "Rhino - Spider-Man villain" },
+            "Amazing Spider-Man-021": { price: 4.00, notes: "Electro - Spider-Man villain" },
+            "Amazing Spider-Man-022": { price: 4.00, notes: "Cloak - Cloak and Dagger" },
+            "Amazing Spider-Man-023": { price: 4.00, notes: "Wong - Dr. Strange ally" },
+            "Amazing Spider-Man-025": { price: 3.00, notes: "Manphibian - Monster character" },
+            "Amazing Spider-Man-026": { price: 5.00, notes: "Mysterio - Spider-Man villain" },
+            "Amazing Spider-Man-027": { price: 4.00, notes: "Spider-Girl - Spider family" },
+            "Amazing Spider-Man-028": { price: 5.00, notes: "Morbius - Vampire anti-hero" },
+            "Amazing Spider-Man-029": { price: 4.00, notes: "Demogoblin - Spider-Man villain" },
+            "Amazing Spider-Man-030": { price: 4.00, notes: "Lizard - Spider-Man villain" },
+            "Amazing Spider-Man-031a": { price: 5.00, notes: "Kraven the Hunter - Spider-Man villain" },
+            "Amazing Spider-Man-033": { price: 4.00, notes: "Man-Thing - Swamp monster" },
+            "Amazing Spider-Man-034": { price: 4.00, notes: "Satana Hellstrom - Occult character" },
+            "Amazing Spider-Man-035": { price: 3.00, notes: "Jennifer Kale - Occult hero" },
+            "Amazing Spider-Man-037": { price: 8.00, notes: "Ancient One - Dr. Strange mentor" },
+            "Amazing Spider-Man-038": { price: 3.00, notes: "Carrion - Spider-Man villain" },
+            "Amazing Spider-Man-201": { price: 5.00, notes: "Spider-Man - Rare version" },
+            "Amazing Spider-Man-203": { price: 4.00, notes: "Dagger - Rare version" },
+            "Amazing Spider-Man-204": { price: 4.00, notes: "Rhino - Rare version" },
+            "Amazing Spider-Man-205": { price: 4.00, notes: "Electro - Rare version" },
+            "Amazing Spider-Man-206": { price: 5.00, notes: "Mysterio - Rare version" },
+            "Amazing Spider-Man-207": { price: 5.00, notes: "Blade - Rare version" },
+            "Amazing Spider-Man-208": { price: 2.00, notes: "Shocker - Rare version" },
+            
+            // === MARVEL HEROCLIX 10TH ANNIVERSARY ===
+            "Marvel Heroclix 10th Anniversary-004": { price: 8.00, notes: "Green Goblin - Spider-Man nemesis" },
+            "Marvel Heroclix 10th Anniversary-005": { price: 8.00, notes: "Thor - Asgardian god" },
+            "Marvel Heroclix 10th Anniversary-008": { price: 6.00, notes: "White Queen - X-Men villain/hero" },
+            
+            // === CHAOS WAR ===
+            "Chaos War-001": { price: 6.00, notes: "Captain America - Iconic hero" },
+            "Chaos War-002": { price: 2.00, notes: "Iron Man Drone - Army builder" },
+            "Chaos War-003": { price: 2.50, notes: "Ultron Drone - Robot army" },
+            "Chaos War-004": { price: 3.00, notes: "Egghead - Ant-Man villain" },
+            "Chaos War-005": { price: 4.00, notes: "Sentinel - X-Men hunter" },
+            "Chaos War-006": { price: 3.00, notes: "Space Phantom - Avengers villain" },
+            "Chaos War-007": { price: 2.50, notes: "Masque Duplicate - Mutant" },
+            "Chaos War-008": { price: 2.50, notes: "Lava Man - Thor villain" },
+            "Chaos War-009": { price: 2.00, notes: "Shadow Council Soldier - Army" },
+            "Chaos War-010": { price: 4.00, notes: "Donald Blake - Thor alter ego" },
+            "Chaos War-011": { price: 4.00, notes: "Tony Stark - Iron Man civilian" },
+            "Chaos War-012": { price: 3.00, notes: "Dinah Soar - Great Lakes Avengers" },
+            "Chaos War-013": { price: 6.00, notes: "Vision - Avengers android" },
+            "Chaos War-014": { price: 5.00, notes: "Hank Pym - Original Ant-Man" },
+            "Chaos War-015": { price: 4.00, notes: "Ant-Man - Size-changing hero" },
+            "Chaos War-016": { price: 4.00, notes: "Wasp - Avengers founder" },
+            "Chaos War-017": { price: 3.00, notes: "Madame Masque - Iron Man villain" },
+            "Chaos War-019": { price: 4.00, notes: "Max Fury - Nick Fury clone" },
+            "Chaos War-020": { price: 5.00, notes: "Black Knight - Avengers hero" },
+            "Chaos War-021": { price: 4.00, notes: "Speed - Young Avenger" },
+            "Chaos War-022": { price: 4.00, notes: "Sharon Carter - Captain America ally" },
+            "Chaos War-023": { price: 6.00, notes: "Ms. Marvel - Popular heroine" },
+            "Chaos War-024": { price: 6.00, notes: "Iron Man - Armored Avenger" },
+            "Chaos War-026": { price: 4.00, notes: "Ant-Man - Scott Lang version" },
+            "Chaos War-027": { price: 4.00, notes: "Genis-Vell - Captain Marvel" },
+            "Chaos War-028": { price: 5.00, notes: "Wonder Man - Avengers powerhouse" },
+            "Chaos War-029": { price: 6.00, notes: "Wolverine - Popular mutant" },
+            "Chaos War-030": { price: 4.00, notes: "Wasp - Different version" },
+            "Chaos War-031": { price: 5.00, notes: "Black Knight - Medieval hero" },
+            "Chaos War-033": { price: 3.00, notes: "Victoria Hand - SHIELD agent" },
+            "Chaos War-034": { price: 6.00, notes: "Ares - God of War" },
+            "Chaos War-035": { price: 12.00, notes: "Sentry - Powerful Avenger" },
+            "Chaos War-038": { price: 8.00, notes: "Thor - God of Thunder" },
+            "Chaos War-040": { price: 6.00, notes: "Nick Fury - SHIELD director" },
+            "Chaos War-209": { price: 6.00, notes: "Spider-Woman - Spider heroine" },
+            
+            // === FAST FORCES: GIANT-SIZE X-MEN ===
+            "Fast Forces: Giant-Size X-Men-001": { price: 6.00, notes: "Professor X - X-Men founder" },
+            "Fast Forces: Giant-Size X-Men-003": { price: 5.00, notes: "Beast - X-Men genius" },
+            
+            // === AVENGERS MOVIE ===
+            "Avengers Movie-001": { price: 6.00, notes: "Captain America - MCU Avenger" },
+            "Avengers Movie-004": { price: 6.00, notes: "Thor - MCU Avenger" },
+            "Avengers Movie-011": { price: 4.00, notes: "Maria Hill - MCU SHIELD" },
+            "Avengers Movie-037": { price: 2.50, notes: "SHIELD Enforcer - Army builder" },
+            "Avengers Movie-203": { price: 6.00, notes: "Nick Fury - MCU SHIELD director" },
+            
+            // === GALACTIC GUARDIANS ===
+            "Galactic Guardians-001": { price: 3.00, notes: "Nova Prime - Corps leader" },
+            "Galactic Guardians-002": { price: 2.00, notes: "Nova Corps Recruit - Army" },
+            "Galactic Guardians-003": { price: 2.50, notes: "Cardinal of the UCT - Cosmic" },
+            "Galactic Guardians-004": { price: 2.50, notes: "Skrull Rebel - Shapeshifter" },
+            "Galactic Guardians-005": { price: 3.00, notes: "Annihilation Seeker - Cosmic threat" },
+            "Galactic Guardians-006": { price: 4.00, notes: "Doombot - Dr. Doom robot" },
+            "Galactic Guardians-007": { price: 3.00, notes: "Blood Brother - Cosmic mercenary" },
+            "Galactic Guardians-008": { price: 6.00, notes: "Nebula - Space pirate" },
+            "Galactic Guardians-009": { price: 8.00, notes: "Namor - Sub-Mariner" },
+            "Galactic Guardians-010": { price: 8.00, notes: "Adam Warlock - Cosmic hero" },
+            "Galactic Guardians-011": { price: 6.00, notes: "Drax - Destroyer" },
+            "Galactic Guardians-012": { price: 4.00, notes: "Charlie-27 - Guardian" },
+            "Galactic Guardians-013": { price: 4.00, notes: "Hollywood - Great Lakes Avengers" },
+            "Galactic Guardians-014": { price: 6.00, notes: "Astral Dr. Strange - Mystic" },
+            "Galactic Guardians-015": { price: 2.50, notes: "Nova Corps Centurion - Army" },
+            "Galactic Guardians-016": { price: 3.00, notes: "Cardinal Raker - Cosmic villain" },
+            "Galactic Guardians-017": { price: 3.00, notes: "Lyja the Lazerfist - Skrull" },
+            "Galactic Guardians-018": { price: 4.00, notes: "Ravenous - Cosmic villain" },
+            "Galactic Guardians-019": { price: 15.00, notes: "Dr. Doom - Major villain" },
+            "Galactic Guardians-020": { price: 6.00, notes: "Magus - Adam Warlock evil self" },
+            "Galactic Guardians-021": { price: 5.00, notes: "Red Shift - Galactus herald" },
+            "Galactic Guardians-022": { price: 4.00, notes: "Xavin - Skrull/Kree hybrid" },
+            "Galactic Guardians-023": { price: 5.00, notes: "Blastaar - Negative Zone ruler" },
+            "Galactic Guardians-024": { price: 4.00, notes: "Nikki - Guardian" },
+            "Galactic Guardians-025": { price: 4.00, notes: "Martinex - Guardian" },
+            "Galactic Guardians-028": { price: 8.00, notes: "Dr. Strange - Sorcerer Supreme" },
+            "Galactic Guardians-029": { price: 6.00, notes: "Morg - Galactus herald" },
+            "Galactic Guardians-030": { price: 8.00, notes: "Fallen One - Dark herald" },
+            "Galactic Guardians-032": { price: 8.00, notes: "Adam Warlock - Different version" },
+            "Galactic Guardians-033": { price: 6.00, notes: "Gamora - Deadliest woman" },
+            "Galactic Guardians-039": { price: 6.00, notes: "Cosmo - Psychic space dog" },
+            "Galactic Guardians-040": { price: 12.00, notes: "Gladiator - Shi'ar Imperial Guard" },
+            "Galactic Guardians-201": { price: 4.00, notes: "Nova - Human rocket" },
+            "Galactic Guardians-202": { price: 3.00, notes: "Skrull Assassin - Shapeshifter" },
+            "Galactic Guardians-203": { price: 6.00, notes: "Namor - Rare version" },
+            "Galactic Guardians-206": { price: 6.00, notes: "Dr. Strange - Rare version" },
+            "Galactic Guardians-207": { price: 8.00, notes: "Hulk - Strongest Avenger" },
+            "Galactic Guardians-208": { price: 6.00, notes: "Super Skrull - FF powers" },
+            "Galactic Guardians-210": { price: 2.50, notes: "Nova Corps Denarian - Army" },
+            
+            // === FAST FORCES: INCREDIBLE HULK ===
+            "Fast Forces: Incredible Hulk-001": { price: 6.00, notes: "Hulk - Strongest there is" },
+            "Fast Forces: Incredible Hulk-002": { price: 3.00, notes: "Hulkbuster Wrangler - Military" },
+            "Fast Forces: Incredible Hulk-003": { price: 5.00, notes: "She-Hulk - Hulk cousin" },
+            "Fast Forces: Incredible Hulk-004": { price: 5.00, notes: "Abomination - Hulk enemy" },
+            "Fast Forces: Incredible Hulk-005": { price: 4.00, notes: "General Ross - Military leader" },
+            "Fast Forces: Incredible Hulk-006": { price: 5.00, notes: "The Leader - Hulk enemy" },
+            
+            // === INCREDIBLE HULK ===
+            "Incredible Hulk-001": { price: 6.00, notes: "Hulk - Incredible strength" },
+            "Incredible Hulk-002": { price: 4.00, notes: "Bruce Banner - Hulk alter ego" },
+            "Incredible Hulk-003": { price: 2.50, notes: "AIM Agent - Science terrorist" },
+            "Incredible Hulk-004": { price: 2.50, notes: "Hulkbuster Soldier - Military" },
+            "Incredible Hulk-005": { price: 2.50, notes: "Humanoid - Robot enemy" },
+            "Incredible Hulk-006": { price: 3.00, notes: "Hulk Robot - Mechanical copy" },
+            "Incredible Hulk-008": { price: 3.00, notes: "John Jameson - Astronaut" },
+            "Incredible Hulk-009": { price: 4.00, notes: "Man-Wolf - Werewolf space" },
+            "Incredible Hulk-010": { price: 6.00, notes: "Punisher - Vigilante" },
+            "Incredible Hulk-011": { price: 6.00, notes: "Punisher - Different version" },
+            "Incredible Hulk-012": { price: 4.00, notes: "Thundra - Warrior woman" },
+            "Incredible Hulk-013": { price: 5.00, notes: "Abomination - Hulk's nemesis" },
+            "Incredible Hulk-014": { price: 5.00, notes: "The Leader - Super genius" },
+            "Incredible Hulk-015": { price: 5.00, notes: "Skaar - Hulk's son" },
+            "Incredible Hulk-016": { price: 4.00, notes: "Lyra - She-Hulk variant" },
+            "Incredible Hulk-017": { price: 3.00, notes: "AIM Renegade - Defector" },
+            "Incredible Hulk-018": { price: 2.50, notes: "AIMarine - Underwater AIM" },
+            "Incredible Hulk-019": { price: 4.00, notes: "Black Tarantula - Crime boss" },
+            "Incredible Hulk-020": { price: 4.00, notes: "White Tiger - Martial artist" },
+            "Incredible Hulk-021": { price: 6.00, notes: "Daredevil - Man Without Fear" },
+            "Incredible Hulk-023": { price: 6.00, notes: "Punisher - Another version" },
+            "Incredible Hulk-024": { price: 4.00, notes: "Jigsaw - Punisher enemy" },
+            "Incredible Hulk-026": { price: 6.00, notes: "Hercules - Greek god" },
+            "Incredible Hulk-027": { price: 4.00, notes: "Amadeus Cho - Super genius" },
+            "Incredible Hulk-029": { price: 4.00, notes: "General Ross - Red Hulk" },
+            "Incredible Hulk-034": { price: 4.00, notes: "Man-Beast - High Evolutionary" },
+            "Incredible Hulk-100": { price: 3.00, notes: "AIMarine Hulk - Variant" },
+            "Incredible Hulk-202": { price: 4.00, notes: "Bruce Banner - Rare" },
+            "Incredible Hulk-203": { price: 3.00, notes: "Hulkbuster Squad Leader - Military" },
+            
+            // === CAPTAIN AMERICA ===
+            "Captain America-058": { price: 5.00, notes: "Human Torch - Fantastic Four" },
+            
+            // === WEB OF SPIDER-MAN ===
+            "Web of Spider-Man-100": { price: 6.00, notes: "Spider-Man - Web slinger" },
+            
+            // === HAMMER OF THOR ===
+            "Hammer of Thor-200": { price: 6.00, notes: "War Machine - Iron Man ally" },
+            
+            // === MUTATIONS AND MONSTERS ===
+            "Mutations and Monsters-002": { price: 4.00, notes: "Cyclops - X-Men leader" },
+            "Mutations and Monsters-006": { price: 3.00, notes: "Pete Wisdom - Excalibur" },
+            "Mutations and Monsters-008": { price: 3.00, notes: "Box - Alpha Flight" },
+            "Mutations and Monsters-015": { price: 5.00, notes: "The Hood - Crime boss" },
+            "Mutations and Monsters-020": { price: 3.00, notes: "Morph - X-Men animated" },
+            
+            // === AVENGERS ===
+            "Avengers-001": { price: 6.00, notes: "Captain America - First Avenger" },
+            "Avengers-002": { price: 6.00, notes: "Iron Man - Armored Avenger" },
+            "Avengers-003": { price: 5.00, notes: "Captain Britain - UK hero" },
+            "Avengers-004": { price: 2.50, notes: "Gargoyle - Defenders" },
+            "Avengers-005": { price: 3.00, notes: "Guardsman - Iron Man armor" },
+            "Avengers-006": { price: 5.00, notes: "Moon Knight - Night vigilante" },
+            "Avengers-007": { price: 4.00, notes: "Crossbones - Cap villain" },
+            "Avengers-008": { price: 5.00, notes: "Wonder Man - Ionic energy" },
+            "Avengers-009": { price: 4.00, notes: "Hulkling - Young Avenger" },
+            "Avengers-010": { price: 4.00, notes: "Patriot - Young Avenger" },
+            "Avengers-011": { price: 4.00, notes: "Stature - Ant-Man's daughter" },
+            "Avengers-012": { price: 4.00, notes: "Shang-Chi - Master of Kung Fu" },
+            "Avengers-013": { price: 2.50, notes: "Piledriver - Wrecking Crew" },
+            "Avengers-014": { price: 3.00, notes: "Stingray - Aquatic hero" },
+            "Avengers-015": { price: 4.00, notes: "US Agent - Captain America" },
+            "Avengers-016": { price: 5.00, notes: "Luke Cage - Power Man" },
+            "Avengers-017": { price: 4.00, notes: "Living Laser - Energy villain" },
+            "Avengers-018": { price: 4.00, notes: "Blazing Skull - WWII hero" },
+            "Avengers-019": { price: 4.00, notes: "Darkhawk - Teen hero" },
+            "Avengers-020": { price: 5.00, notes: "Dragon Man - Android" },
+            "Avengers-021": { price: 4.00, notes: "Toro - Human Torch partner" },
+            "Avengers-022": { price: 4.00, notes: "Iron Widow - Villain" },
+            "Avengers-023": { price: 4.00, notes: "Lionheart - British hero" },
+            "Avengers-024": { price: 6.00, notes: "Black Panther - Wakandan king" },
+            "Avengers-025": { price: 5.00, notes: "Quicksilver - Speedy mutant" },
+            "Avengers-026": { price: 6.00, notes: "Scarlet Witch - Reality altering" },
+            "Avengers-027": { price: 5.00, notes: "Vision - Synthetic Avenger" },
+            "Avengers-029": { price: 6.00, notes: "Taskmaster - Skill copycat" },
+            "Avengers-030": { price: 4.00, notes: "Iron Lad - Young Avenger" },
+            "Avengers-031": { price: 5.00, notes: "Ronin - Hawkeye identity" },
+            "Avengers-032": { price: 10.00, notes: "Red Skull - Cap's nemesis" },
+            "Avengers-033": { price: 5.00, notes: "Abomination - Hulk enemy" },
+            "Avengers-034": { price: 6.00, notes: "Baron Zemo - Masters of Evil" },
+            "Avengers-035": { price: 5.00, notes: "Bucky - Winter Soldier" },
+            "Avengers-036": { price: 5.00, notes: "Falcon - Cap's partner" },
+            "Avengers-037": { price: 3.00, notes: "Thin Man - Stretchy hero" },
+            "Avengers-038": { price: 6.00, notes: "Giant-Man - Size changer" },
+            "Avengers-039": { price: 4.00, notes: "Spitfire - British speedster" },
+            "Avengers-040": { price: 6.00, notes: "Namor - Sub-Mariner" },
+            "Avengers-041": { price: 4.00, notes: "Union Jack - British hero" },
+            "Avengers-042": { price: 4.00, notes: "Starfox - Eternal" },
+            "Avengers-043": { price: 6.00, notes: "Molecule Man - Reality manipulator" },
+            "Avengers-044": { price: 4.00, notes: "Grim Reaper - Death-themed villain" },
+            "Avengers-045": { price: 5.00, notes: "Thunderstrike - Thor successor" },
+            "Avengers-046": { price: 4.00, notes: "Namorita - New Warriors" },
+            "Avengers-048": { price: 5.00, notes: "Yondu - Guardian" },
+            "Avengers-049": { price: 4.00, notes: "Two-Gun Kid - Western hero" },
+            "Avengers-050": { price: 6.00, notes: "Winter Soldier - Bucky Barnes" },
+            "Avengers-051": { price: 6.00, notes: "Spider-Man - Web slinger" },
+            "Avengers-052": { price: 4.00, notes: "Citizen V - Thunderbolts" },
+            "Avengers-054": { price: 6.00, notes: "Ares - God of War" },
+            "Avengers-060": { price: 8.00, notes: "Cap and Bucky - Duo figure" },
+            "Avengers-061": { price: 8.00, notes: "Mandarin - Iron Man villain" },
+            "Avengers-B001": { price: 3.00, notes: "Edwin Jarvis - Butler" },
+            "Avengers-B003": { price: 3.00, notes: "Ken Hale - Gorilla Man" },
+            "Avengers-B006": { price: 3.00, notes: "Kat Farrell - Reporter" },
+            "Avengers-B007": { price: 3.00, notes: "Duane Freeman - Supporting" },
+            "Avengers-BF001": { price: 2.00, notes: "Ordinary Day - Battlefield" },
+            "Avengers-BF002": { price: 2.00, notes: "Wasteland - Battlefield" },
+            "Avengers-BF003": { price: 2.00, notes: "Exhaustion - Battlefield" },
+            "Avengers-BF004": { price: 2.00, notes: "Inferno - Battlefield" },
+            "Avengers-BF005": { price: 2.00, notes: "Atlantis Rising - Battlefield" },
+            "Avengers-S002": { price: 2.00, notes: "Dark Cauldron - Special object" },
+            
+            // === SINISTER ===
+            "Sinister-005": { price: 2.50, notes: "SHIELD Sniper - Agent" },
+            "Sinister-019": { price: 5.00, notes: "Jewel - Jessica Jones" },
+            "Sinister-023": { price: 4.00, notes: "Beetle - Spider-Man villain" },
+            "Sinister-029": { price: 4.00, notes: "Electro - Spider-Man villain" },
+            "Sinister-031": { price: 3.00, notes: "Fixer - Thunderbolts" },
+            "Sinister-035": { price: 4.00, notes: "Jack O'Lantern - Villain" },
+            "Sinister-041": { price: 4.00, notes: "MACH-3 - Thunderbolts" },
+            "Sinister-043": { price: 4.00, notes: "Nighthawk - Defenders" },
+            "Sinister-064": { price: 6.00, notes: "Captain Marvel - Cosmic hero" },
+            "Sinister-068": { price: 4.00, notes: "Rhino - Spider-Man villain" },
+            
+            // === ARMOR WARS ===
+            "Armor Wars-089": { price: 4.00, notes: "Black King - Hellfire Club" },
+            "Armor Wars-094": { price: 6.00, notes: "Mystique - Shapeshifting mutant" },
+            "Armor Wars-201": { price: 3.00, notes: "Eliot Franklin - Thunderbolt" },
+            "Armor Wars-204": { price: 3.00, notes: "Georges Baptiste - Supporting" },
+            "Armor Wars-207": { price: 4.00, notes: "Captain Britain - UK hero" },
+            "Armor Wars-208": { price: 3.00, notes: "Shiro Yoshida - Sunfire" },
+            "Armor Wars-214": { price: 4.00, notes: "Tony Stark - Iron Man" },
+            "Armor Wars-215": { price: 3.00, notes: "John Walker - US Agent" },
+            
+            // === MUTANT MAYHEM ===
+            "Mutant Mayhem-216": { price: 4.00, notes: "Dr. Bruce Banner - Hulk" },
+            
+            // === CLOBBERIN TIME ===
+            "Clobberin Time-026": { price: 4.00, notes: "Yellowjacket - Ant-Man villain" },
+            "Clobberin Time-055": { price: 5.00, notes: "Black Widow - Spy hero" },
+            
+            // === INFINITY CHALLENGE ===
+            "Infinity Challenge-033": { price: 5.00, notes: "Elektra - Assassin" },
+            "Infinity Challenge-109": { price: 4.00, notes: "Mr. Hyde - Jekyll villain" },
+            "Infinity Challenge-130": { price: 8.00, notes: "Kang - Time conqueror" },
+            
+            // === WIZKIDS MARVEL ===
+            "WizKids Marvel-M-001": { price: 4.00, notes: "Moonstone - Thunderbolts" },
+            
+            // === INDY ===
+            "Indy-017": { price: 5.00, notes: "Sydney Savage - Indie character" },
+            "Indy-031": { price: 4.00, notes: "Arashi - Indie character" },
+            "Indy-040": { price: 4.00, notes: "Boon - Indie character" },
+            "Indy-044": { price: 5.00, notes: "Ian Nottingham - Witchblade" },
+            
+            // === FAST FORCES: THE LEGION OF DOOM ===
+            "Fast Forces: The Legion of Doom-001": { price: 6.00, notes: "Lex Luthor - Superman nemesis" },
+            "Fast Forces: The Legion of Doom-002": { price: 5.00, notes: "Bizarro - Backwards Superman" },
+            "Fast Forces: The Legion of Doom-003": { price: 5.00, notes: "Cheetah - Wonder Woman villain" },
+            "Fast Forces: The Legion of Doom-004": { price: 5.00, notes: "Black Manta - Aquaman villain" },
+            "Fast Forces: The Legion of Doom-005": { price: 4.00, notes: "Solomon Grundy - Zombie powerhouse" },
+            "Fast Forces: The Legion of Doom-006": { price: 4.00, notes: "Giganta - Size-changing villain" },
+            
+            // === SUPERMAN AND THE LEGION OF SUPER-HEROES ===
+            "Superman and the Legion of Super-Heroes-001": { price: 5.00, notes: "Cosmic Boy - Legion leader" },
+            "Superman and the Legion of Super-Heroes-002": { price: 4.00, notes: "Saturn Girl - Telepathic Legionnaire" },
+            "Superman and the Legion of Super-Heroes-003": { price: 4.00, notes: "Lightning Lad - Electric Legionnaire" },
+            "Superman and the Legion of Super-Heroes-005a": { price: 3.00, notes: "Daxamite - Superman-like alien" },
+            "Superman and the Legion of Super-Heroes-006": { price: 3.00, notes: "Triplicate Girl - Clone powers" },
+            "Superman and the Legion of Super-Heroes-007": { price: 3.00, notes: "Shrinking Violet - Size powers" },
+            "Superman and the Legion of Super-Heroes-008": { price: 3.00, notes: "Phantom Girl - Intangible Legionnaire" },
+            "Superman and the Legion of Super-Heroes-009": { price: 3.00, notes: "Blight - Legion villain" },
+            "Superman and the Legion of Super-Heroes-010": { price: 3.00, notes: "Polar Boy - Ice Legionnaire" },
+            "Superman and the Legion of Super-Heroes-011": { price: 3.00, notes: "Sensor Girl - Legionnaire" },
+            "Superman and the Legion of Super-Heroes-012": { price: 3.00, notes: "Tyroc - Sound-based Legionnaire" },
+            "Superman and the Legion of Super-Heroes-013": { price: 3.00, notes: "Ladytron - Robotic Legionnaire" },
+            "Superman and the Legion of Super-Heroes-014": { price: 3.00, notes: "Daemonite - WildStorm alien" },
+            "Superman and the Legion of Super-Heroes-015": { price: 4.00, notes: "Timber Wolf - Feral Legionnaire" },
+            "Superman and the Legion of Super-Heroes-016": { price: 4.00, notes: "Giganta - Size-changing villain" },
+            "Superman and the Legion of Super-Heroes-017a": { price: 5.00, notes: "Cheetah - Wonder Woman villain" },
+            "Superman and the Legion of Super-Heroes-018": { price: 4.00, notes: "Ultra-Boy - Powerful Legionnaire" },
+            "Superman and the Legion of Super-Heroes-019": { price: 4.00, notes: "Amethyst - Magical princess" },
+            "Superman and the Legion of Super-Heroes-020": { price: 3.00, notes: "Blok - Rocky Legionnaire" },
+            "Superman and the Legion of Super-Heroes-021": { price: 4.00, notes: "Wildfire - Energy Legionnaire" },
+            "Superman and the Legion of Super-Heroes-022": { price: 3.00, notes: "Gates - Teleporting Legionnaire" },
+            "Superman and the Legion of Super-Heroes-023": { price: 5.00, notes: "Mr. Majestic - WildStorm Superman" },
+            "Superman and the Legion of Super-Heroes-024": { price: 6.00, notes: "Lex Luthor - Superman's nemesis" },
+            "Superman and the Legion of Super-Heroes-025": { price: 4.00, notes: "Mano - Destructive villain" },
+            "Superman and the Legion of Super-Heroes-027": { price: 8.00, notes: "Kalibak - Darkseid's son" },
+            "Superman and the Legion of Super-Heroes-028": { price: 5.00, notes: "Lightray - New God hero" },
+            "Superman and the Legion of Super-Heroes-030": { price: 4.00, notes: "Dawnstar - Tracking Legionnaire" },
+            "Superman and the Legion of Super-Heroes-031": { price: 3.00, notes: "Chameleon Girl - Shapeshifter" },
+            "Superman and the Legion of Super-Heroes-032": { price: 4.00, notes: "Colossal Boy - Giant Legionnaire" },
+            "Superman and the Legion of Super-Heroes-033": { price: 5.00, notes: "Stargirl - JSA member" },
+            "Superman and the Legion of Super-Heroes-034": { price: 5.00, notes: "Starman - Cosmic rod wielder" },
+            "Superman and the Legion of Super-Heroes-041": { price: 6.00, notes: "Universo - Hypnotic villain" },
+            "Superman and the Legion of Super-Heroes-043": { price: 8.00, notes: "Orion - New God warrior" },
+            "Superman and the Legion of Super-Heroes-044": { price: 15.00, notes: "Darkseid - Lord of Apokolips" },
+            "Superman and the Legion of Super-Heroes-045": { price: 6.00, notes: "Computo - AI villain" },
+            "Superman and the Legion of Super-Heroes-201": { price: 5.00, notes: "Cosmic Boy - Rare version" },
+            "Superman and the Legion of Super-Heroes-206": { price: 3.00, notes: "Triplicate Girl - Rare" },
+            "Superman and the Legion of Super-Heroes-207": { price: 3.00, notes: "Shrinking Violet - Rare" },
+            
+            // === BATMAN CLASSIC TV ===
+            "Batman Classic TV-001": { price: 8.00, notes: "Batman - 1960s TV nostalgia" },
+            "Batman Classic TV-003": { price: 6.00, notes: "Robin - Classic TV sidekick" },
+            
+            // === MAN OF STEEL ===
+            "Man of Steel-001": { price: 4.00, notes: "Superman - Man of Steel" },
+            "Man of Steel-002": { price: 1.50, notes: "Kryptonian Scientist - Generic" },
+            "Man of Steel-003": { price: 6.00, notes: "General Zod - Superman villain" },
+            "Man of Steel-004": { price: 2.00, notes: "Kryptonian Rebel - Generic" },
+            "Man of Steel-005": { price: 3.00, notes: "Jor-El - Superman's father" },
+            "Man of Steel-006": { price: 2.00, notes: "Kryptonian Warrior - Generic" },
+            "Man of Steel-007": { price: 3.00, notes: "Lois Lane - Reporter" },
+            "Man of Steel-008": { price: 1.00, notes: "Soldier - Generic army" },
+            "Man of Steel-009": { price: 3.00, notes: "Clark Kent - Superman identity" },
+            "Man of Steel-011": { price: 4.00, notes: "Jax-Ur - Kryptonian villain" },
+            "Man of Steel-012": { price: 3.00, notes: "Lara Lor-Van - Superman's mother" },
+            
+            // === TEEN TITANS ===
+            "Teen Titans-001": { price: 5.00, notes: "Robin - Teen Titans leader" },
+            "Teen Titans-004": { price: 2.50, notes: "Psion - Generic alien" },
+            "Teen Titans-005a": { price: 2.50, notes: "Gordanian - Generic alien" },
+            "Teen Titans-008": { price: 5.00, notes: "Wonder Girl - Teen Amazon" },
+            "Teen Titans-009": { price: 2.00, notes: "NOWHERE Soldier - Generic" },
+            "Teen Titans-013": { price: 4.00, notes: "Solstice - Light-powered Titan" },
+            "Teen Titans-014": { price: 4.00, notes: "Osiris - Black Adam family" },
+            "Teen Titans-016": { price: 3.00, notes: "Grymm - Villain" },
+            "Teen Titans-020": { price: 4.00, notes: "Fairchild - Gen 13 member" },
+            "Teen Titans-029": { price: 4.00, notes: "Shimmer - Fearsome Five" },
+            "Teen Titans-032": { price: 5.00, notes: "Dr. Light - Villain/hero" },
+            "Teen Titans-035": { price: 5.00, notes: "Terra - Earth powers" },
+            "Teen Titans-056": { price: 6.00, notes: "Harvest - Major villain" },
+            "Teen Titans-201": { price: 5.00, notes: "Red Robin - Tim Drake" },
+            "Teen Titans-202": { price: 6.00, notes: "Superboy - Kon-El" },
+            "Teen Titans-203": { price: 5.00, notes: "Wonder Girl - Rare version" },
+            "Teen Titans-206": { price: 2.50, notes: "Brother Blood Acolyte - Cultist" },
+            
+            // === FAST FORCES: STREETS OF GOTHAM ===
+            "Fast Forces: Streets of Gotham-001": { price: 4.00, notes: "Oracle - Barbara Gordon" },
+            "Fast Forces: Streets of Gotham-002": { price: 4.00, notes: "Lady Blackhawk - Pilot hero" },
+            "Fast Forces: Streets of Gotham-003": { price: 5.00, notes: "Huntress - Vigilante" },
+            "Fast Forces: Streets of Gotham-004": { price: 5.00, notes: "Black Canary - Sonic scream" },
+            "Fast Forces: Streets of Gotham-005": { price: 4.00, notes: "Hawk - Dove's partner" },
+            "Fast Forces: Streets of Gotham-006": { price: 4.00, notes: "Dove - Peace and order" },
+            
+            // === BATMAN: STREETS OF GOTHAM ===
+            "Batman: Streets of Gotham-003": { price: 5.00, notes: "Black Canary - Birds of Prey" },
+            "Batman: Streets of Gotham-004": { price: 2.50, notes: "GCPD Detective - Generic cop" },
+            "Batman: Streets of Gotham-006": { price: 5.00, notes: "Blue Beetle - Scarab hero" },
+            "Batman: Streets of Gotham-010": { price: 3.00, notes: "Black Glove Demon - Villain" },
+            "Batman: Streets of Gotham-011": { price: 4.00, notes: "Dr. Hurt - Batman villain" },
+            "Batman: Streets of Gotham-012": { price: 5.00, notes: "Robin - Damian Wayne" },
+            "Batman: Streets of Gotham-013": { price: 6.00, notes: "Batman - Dark Knight" },
+            "Batman: Streets of Gotham-014": { price: 5.00, notes: "Huntress - Gotham vigilante" },
+            "Batman: Streets of Gotham-017": { price: 4.00, notes: "Ice - Fire's partner" },
+            "Batman: Streets of Gotham-019": { price: 6.00, notes: "Red Hood - Jason Todd" },
+            "Batman: Streets of Gotham-032": { price: 6.00, notes: "Batman - Different version" },
+            "Batman: Streets of Gotham-043": { price: 5.00, notes: "Katana - Sword-wielding hero" },
+            
+            // === BATMAN ===
+            "Batman-001": { price: 6.00, notes: "Batman - Gotham's protector" },
+            "Batman-002": { price: 4.00, notes: "Bruce Wayne - Billionaire playboy" },
+            "Batman-003": { price: 2.00, notes: "Arkham Asylum Guard - Generic" },
+            "Batman-004": { price: 2.50, notes: "Joker Thug - Henchman" },
+            "Batman-005": { price: 4.00, notes: "Beast Boy - Teen Titan" },
+            "Batman-007a": { price: 6.00, notes: "Catwoman - Cat burglar" },
+            "Batman-008": { price: 6.00, notes: "Nightwing - Dick Grayson" },
+            "Batman-009": { price: 5.00, notes: "Red Robin - Tim Drake" },
+            "Batman-010": { price: 5.00, notes: "Blackbat - Cassandra Cain" },
+            "Batman-011": { price: 5.00, notes: "Katana - Outsider" },
+            "Batman-013": { price: 8.00, notes: "The Joker - Clown Prince" },
+            "Batman-015": { price: 4.00, notes: "Nightrunner - French Batman" },
+            "Batman-016": { price: 6.00, notes: "Batgirl - Barbara Gordon" },
+            "Batman-017": { price: 5.00, notes: "Robin - Tim Drake" },
+            "Batman-018": { price: 3.00, notes: "Aaron Cash - Arkham guard" },
+            "Batman-020": { price: 4.00, notes: "KGBeast - Soviet assassin" },
+            "Batman-022": { price: 6.00, notes: "Two-Face - Harvey Dent" },
+            "Batman-023a": { price: 3.00, notes: "Sasha Bordeaux - Bodyguard" },
+            "Batman-025": { price: 6.00, notes: "Batgirl - Different version" },
+            "Batman-027": { price: 5.00, notes: "Dick Grayson - Civilian" },
+            "Batman-030": { price: 4.00, notes: "El Gaucho - Argentinian Batman" },
+            "Batman-031": { price: 4.00, notes: "Alfred Pennyworth - Butler" },
+            "Batman-032": { price: 6.00, notes: "Big Barda - New God" },
+            "Batman-034": { price: 6.00, notes: "Poison Ivy - Plant villain" },
+            "Batman-036": { price: 6.00, notes: "Batwoman - Kate Kane" },
+            "Batman-040": { price: 4.00, notes: "Halo - Outsider" },
+            "Batman-100": { price: 8.00, notes: "Nightwing and Batgirl - Duo" },
+            "Batman-101": { price: 4.00, notes: "Renegade - Dick Grayson" },
+            "Batman-203": { price: 2.00, notes: "Hired Goon - Generic thug" },
+            "Batman-204": { price: 6.00, notes: "Catwoman - Rare version" },
+            "Batman-205": { price: 6.00, notes: "Nightwing - Rare version" },
+            "Batman-206": { price: 5.00, notes: "Red Robin - Rare version" },
+            "Batman-207": { price: 8.00, notes: "The Joker - Rare version" },
+            "Batman-208": { price: 6.00, notes: "Harley Quinn - Joker's partner" },
+            
+            // === DC HEROCLIX 10TH ANNIVERSARY ===
+            "DC Heroclix 10th Anniversary-001": { price: 6.00, notes: "Batman - Anniversary edition" },
+            "DC Heroclix 10th Anniversary-002": { price: 8.00, notes: "Wonder Woman - DC Trinity" },
+            "DC Heroclix 10th Anniversary-008": { price: 6.00, notes: "Catwoman - Anniversary edition" },
+            "DC Heroclix 10th Anniversary-014": { price: 5.00, notes: "Robin - Anniversary edition" },
+            
+            // === JUSTICE LEAGUE 52 ===
+            "Justice League 52-002": { price: 6.00, notes: "Batman - New 52 version" },
+            "Justice League 52-005": { price: 6.00, notes: "Aquaman - King of Atlantis" },
+            "Justice League 52-011": { price: 5.00, notes: "Hawkman - Winged warrior" },
+            "Justice League 52-012": { price: 4.00, notes: "Shade the Changing Man - Vertigo" },
+            "Justice League 52-015": { price: 3.00, notes: "Mindwarp - Villain" },
+            
+            // === THE DARK KNIGHT RISES ===
+            "The Dark Knight Rises-001": { price: 3.00, notes: "The Dark Knight - Movie Batman" },
+            "The Dark Knight Rises-003": { price: 2.00, notes: "Bruce Wayne - Movie version" },
+            "The Dark Knight Rises-004": { price: 1.50, notes: "Arkham Asylum Inmate - Generic" },
+            "The Dark Knight Rises-009": { price: 3.00, notes: "Two-Face - Movie villain" },
+            "The Dark Knight Rises-010": { price: 2.00, notes: "Falcone Bodyguard - Generic" },
+            "The Dark Knight Rises-014": { price: 6.00, notes: "Bane - Movie villain" },
+            "The Dark Knight Rises-016": { price: 2.50, notes: "Salvatore Maroni - Crime boss" },
+            "The Dark Knight Rises-018": { price: 3.00, notes: "Rachel Dawes - Movie character" },
+            "The Dark Knight Rises-020": { price: 4.00, notes: "The Joker as Sgt - Movie" },
+            "The Dark Knight Rises-100": { price: 4.00, notes: "Batman - Movie limited edition" },
+            
+            // === FAST FORCES: WAR OF THE LIGHT ===
+            "Fast Forces: War of the Light-003": { price: 8.00, notes: "Sinestro - Yellow Lantern leader" },
+            
+            // === SUPERMAN ===
+            "Superman-001": { price: 6.00, notes: "Superman - Man of Steel" },
+            "Superman-002": { price: 2.00, notes: "Kryptonian Soldier - Generic" },
+            "Superman-003": { price: 2.50, notes: "Kryptonian Infiltrator - Generic" },
+            "Superman-004": { price: 2.50, notes: "Intergang Underboss - Crime" },
+            "Superman-005": { price: 3.00, notes: "Seven Deadly Brothers - Villain" },
+            "Superman-006": { price: 4.00, notes: "All-Star Bizarro - Backwards" },
+            "Superman-007": { price: 4.00, notes: "Star Boy - Legionnaire" },
+            "Superman-008": { price: 5.00, notes: "Brainiac 5 - Legion genius" },
+            "Superman-009": { price: 4.00, notes: "Lois Lane, Superwoman - Powered" },
+            "Superman-010": { price: 6.00, notes: "Supergirl - Kryptonian cousin" },
+            "Superman-011": { price: 3.00, notes: "Gangbuster - Metropolis hero" },
+            "Superman-012": { price: 4.00, notes: "Livewire - Electric villain" },
+            "Superman-013": { price: 5.00, notes: "Maxwell Lord - Mind controller" },
+            "Superman-014": { price: 3.00, notes: "Mercy Graves - Lex's bodyguard" },
+            "Superman-015": { price: 6.00, notes: "Lex Luthor - Superman's nemesis" },
+            "Superman-016": { price: 4.00, notes: "Element Woman - Elemental hero" },
+            "Superman-018": { price: 5.00, notes: "Steel - Man of Steel" },
+            "Superman-019": { price: 5.00, notes: "Magog - Kingdom Come character" },
+            "Superman-020": { price: 4.00, notes: "Bruno Mannheim - Crime boss" },
+            "Superman-021": { price: 4.00, notes: "Human Target - Master disguise" },
+            "Superman-022": { price: 4.00, notes: "Sun Boy - Legion solar power" },
+            "Superman-023": { price: 4.00, notes: "Earth Man - Legion villain" },
+            "Superman-025": { price: 3.00, notes: "Matter-Eater Lad - Legion" },
+            "Superman-026": { price: 4.00, notes: "Lucy Lane, Superwoman - Powered" },
+            "Superman-027": { price: 6.00, notes: "Parasite - Energy vampire" },
+            "Superman-028": { price: 4.00, notes: "Manchester Black - Elite leader" },
+            "Superman-029": { price: 5.00, notes: "Silver Banshee - Sonic villain" },
+            "Superman-030": { price: 3.00, notes: "Hope Taya - Supporting character" },
+            "Superman-031": { price: 5.00, notes: "Non - Kryptonian villain" },
+            "Superman-037": { price: 4.00, notes: "Libra - Scale-themed villain" },
+            "Superman-039": { price: 4.00, notes: "Wildfire - Energy Legionnaire" },
+            "Superman-044": { price: 5.00, notes: "Ursa - Kryptonian villain" },
+            "Superman-048": { price: 6.00, notes: "Aquaman - King of the seas" },
+            "Superman-050": { price: 8.00, notes: "Imperiex - Cosmic destroyer" },
+            "Superman-100": { price: 4.00, notes: "Superman Robot - Mechanical copy" },
+            
+            // === BRAVE AND THE BOLD ===
+            "Brave and the Bold-046": { price: 8.00, notes: "Batman and Green Arrow - Duo" },
+            
+            // === ARKHAM ASYLUM ===
+            "Arkham Asylum-036": { price: 6.00, notes: "Zoom - Speed villain" },
+            
+            // === CRISIS ===
+            "Crisis-055": { price: 8.00, notes: "Sinestro - Yellow Lantern" },
+            
+            // === JUSTICE LEAGUE ===
+            "Justice League-007": { price: 4.00, notes: "Icicle - Cold villain" },
+            "Justice League-008": { price: 6.00, notes: "Lex Luthor - Genius villain" },
+            "Justice League-010": { price: 4.00, notes: "Bulleteer - Seven Soldiers" },
+            "Justice League-017": { price: 6.00, notes: "Parasite - Energy vampire" },
+            "Justice League-020": { price: 5.00, notes: "Black Hand - Death-powered" },
+            "Justice League-022": { price: 4.00, notes: "Professor Ivo - Android maker" },
+            "Justice League-023": { price: 4.00, notes: "Toyman - Superman villain" },
+            "Justice League-027": { price: 8.00, notes: "The Flash - Fastest man alive" },
+            "Justice League-037": { price: 8.00, notes: "Wonder Woman - Amazon princess" },
+            "Justice League-043": { price: 4.00, notes: "Dr. Polaris - Magnetic villain" },
+            "Justice League-047": { price: 5.00, notes: "Hourman - Time-powered hero" },
+            
+            // === LEGION OF SUPER HEROES ===
+            "Legion of Super Heroes-008": { price: 3.00, notes: "Shrinking Violet - Size Legionnaire" },
+            
+            // === ORIGIN ===
+            "Origin-210": { price: 6.00, notes: "Detective John Jones - Martian Manhunter" },
+            
+            // === GIANTS ===
+            "Giants-002": { price: 8.00, notes: "Validus - Legion villain" },
+            
+            // === COLLATERAL DAMAGE ===
+            "Collateral Damage-021": { price: 5.00, notes: "Katana - Outsider swordswoman" },
+            
+            // === ICONS ===
+            "Icons-008": { price: 6.00, notes: "Scarecrow - Fear villain" },
+            "Icons-022": { price: 6.00, notes: "Starfire - Teen Titan" },
+            "Icons-025": { price: 6.00, notes: "Aquaman - Sea king" },
+            "Icons-031": { price: 8.00, notes: "Wonder Woman - Amazon warrior" },
+            "Icons-052": { price: 5.00, notes: "Terra - Earth-powered Titan" },
+            
+            // === LEGACY ===
+            "Legacy-008": { price: 5.00, notes: "Enchantress - Magical villain" },
+            "Legacy-021": { price: 5.00, notes: "Stargirl - JSA member" },
+            "Legacy-026": { price: 6.00, notes: "Power Girl - Kryptonian hero" },
+            "Legacy-053": { price: 4.00, notes: "Obsidian - Shadow hero" },
+            "Legacy-056": { price: 4.00, notes: "Jade - Green Lantern" },
+            "Legacy-064": { price: 6.00, notes: "Superboy - Teen Kryptonian" },
+            "Legacy-065": { price: 6.00, notes: "Superboy - Different version" },
+            "Legacy-066": { price: 6.00, notes: "Superboy - Another version" },
+            
+            // === COSMIC JUSTICE ===
+            "Cosmic Justice-042": { price: 5.00, notes: "Troia - Wonder Girl grown up" },
+            "Cosmic Justice-065": { price: 5.00, notes: "Starman - Cosmic rod hero" },
+            "Cosmic Justice-067": { price: 6.00, notes: "Firestorm - Nuclear hero" },
+            "Cosmic Justice-079": { price: 6.00, notes: "Circe - Wonder Woman villain" },
+            
+            // === HYPERTIME ===
+            "Hypertime-008": { price: 2.50, notes: "Checkmate Agent - Spy" },
+            "Hypertime-016": { price: 2.50, notes: "Intergang Medic - Crime support" },
+            "Hypertime-018": { price: 2.50, notes: "Intergang Medic - Different" },
+            "Hypertime-076": { price: 5.00, notes: "Black Manta - Aquaman villain" }
+        };
+
         // Initialize the application
         function initializeApp() {
             loadStoredData();
             renderCollection();
             updateStats();
+            
+            // Show notification about pre-loaded estimated prices
+            setTimeout(() => {
+                const estimatedCount = Object.keys(estimatedPrices).length;
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; z-index: 1001;
+                    background: linear-gradient(135deg, #28a745, #20c997);
+                    color: white; padding: 15px 20px; border-radius: 10px;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                    font-weight: bold; max-width: 350px;
+                `;
+                notification.innerHTML = `
+                    🎉 <strong>COMPREHENSIVE PRICING LOADED!</strong><br>
+                    ${estimatedCount}+ figures pre-priced with market estimates<br>
+                    <small>Every figure now has an estimated value! Click "💡 Pre-Priced Items" to explore</small>
+                `;
+                document.body.appendChild(notification);
+                
+                // Auto-remove after 6 seconds
+                setTimeout(() => notification.remove(), 6000);
+            }, 1000);
         }
 
         // Load stored pricing and notes data
@@ -1087,6 +1860,13 @@
             if (stored) {
                 figureData = JSON.parse(stored);
             }
+            
+            // Merge in estimated prices for items that don't have stored data
+            Object.entries(estimatedPrices).forEach(([key, data]) => {
+                if (!figureData[key]) {
+                    figureData[key] = { ...data };
+                }
+            });
         }
 
         // Save data to localStorage
@@ -1177,41 +1957,57 @@
             const priceDisplay = document.getElementById(`price-${key}`);
             priceDisplay.innerHTML = '<div class="loading">🔍 Searching eBay...</div>';
             
-            try {
-                // Search for the figure on eBay
-                const searchQuery = `HeroClix ${setName} ${figureName} ${figureId}`;
-                const response = await fetch(`https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(searchQuery)}&limit=10`, {
-                    headers: {
-                        'Authorization': 'Bearer YOUR_EBAY_TOKEN',
-                        'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const prices = data.itemSummaries?.map(item => parseFloat(item.price.value)) || [];
-                    
-                    if (prices.length > 0) {
-                        const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
-                        updatePrice(key, avgPrice);
-                    } else {
-                        throw new Error('No results found');
-                    }
-                } else {
-                    throw new Error('eBay API error');
-                }
-            } catch (error) {
-                // Fallback: Open eBay search in new tab
-                const searchQuery = `HeroClix ${setName} ${figureName} ${figureId}`;
-                const ebayUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(searchQuery)}&_sacat=0&LH_Sold=1&LH_Complete=1`;
-                window.open(ebayUrl, '_blank');
-                
-                priceDisplay.innerHTML = `
-                    <div class="error">Manual price check opened in new tab</div>
-                    <input type="number" step="0.01" placeholder="Enter price..." 
+            // Since we can't access eBay API directly, we'll open multiple search tabs for better price research
+            const searchQueries = [
+                `HeroClix ${setName} ${figureName} ${figureId}`,
+                `HeroClix ${figureName} ${figureId}`,
+                `"${figureName}" HeroClix ${figureId}`,
+                `HeroClix ${setName} ${figureId}`
+            ];
+            
+            // Open sold listings search
+            const soldUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(searchQueries[0])}&_sacat=0&LH_Sold=1&LH_Complete=1&_sop=13`;
+            window.open(soldUrl, '_blank');
+            
+            // Open current listings search
+            const currentUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(searchQueries[0])}&_sacat=0&LH_BIN=1&_sop=15`;
+            window.open(currentUrl, '_blank');
+            
+            priceDisplay.innerHTML = `
+                <div style="background: #fff3cd; padding: 10px; border-radius: 5px; border-left: 4px solid #ffc107;">
+                    <div><strong>📊 Price Research Opened</strong></div>
+                    <div style="font-size: 0.9em; margin-top: 5px;">
+                        • Sold listings (what it actually sells for)<br>
+                        • Current listings (what sellers are asking)
+                    </div>
+                    <input type="number" step="0.01" placeholder="Enter average sold price..." 
+                           style="width: 100%; margin-top: 8px; padding: 5px;" 
                            onchange="updatePrice('${key}', parseFloat(this.value))">
-                `;
-            }
+                    <div style="margin-top: 8px;">
+                        <button class="btn btn-primary btn-small" onclick="openAlternateSearches('${key}', '${setName}', '${figureName}', '${figureId}')">
+                            🔍 More Search Options
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Open alternative search options
+        function openAlternateSearches(key, setName, figureName, figureId) {
+            const alternatives = [
+                { name: "Troll & Toad", url: `https://www.trollandtoad.com/s?q=${encodeURIComponent(`HeroClix ${figureName}`)}` },
+                { name: "COMC", url: `https://www.comc.com/Cards/s-All-All-All-All-All-All/${encodeURIComponent(figureName)}/All-All` },
+                { name: "Mercari", url: `https://www.mercari.com/search/?keyword=${encodeURIComponent(`HeroClix ${figureName}`)}` },
+                { name: "Facebook Marketplace", url: `https://www.facebook.com/marketplace/search/?query=${encodeURIComponent(`HeroClix ${figureName}`)}` }
+            ];
+            
+            alternatives.forEach((site, index) => {
+                setTimeout(() => {
+                    window.open(site.url, '_blank');
+                }, index * 500); // Stagger the opens
+            });
+            
+            alert(`Opening ${alternatives.length} additional marketplaces for price comparison!`);
         }
 
         // Update price for a figure
@@ -1388,14 +2184,244 @@
             renderCollection(filtered);
         }
 
-        // Clear all stored data
-        function clearAll() {
-            if (confirm('This will clear all pricing and notes data. Are you sure?')) {
-                localStorage.removeItem('heroclix-data');
-                figureData = {};
-                renderCollection();
-                updateStats();
+        // Show sold items only
+        function showSoldItems() {
+            const filtered = {};
+            Object.entries(collectionData).forEach(([setName, figures]) => {
+                const soldFigures = figures.filter(figure => {
+                    const key = `${setName}-${figure.id}`;
+                    const data = figureData[key];
+                    return data?.sold;
+                });
+                
+                if (soldFigures.length > 0) {
+                    filtered[setName] = soldFigures;
+                }
+            });
+
+            renderCollection(filtered);
+        }
+        
+        // Generate listing descriptions for high-value items
+        function generateListings() {
+            let listings = [];
+            let totalItems = 0;
+            
+            Object.entries(collectionData).forEach(([setName, figures]) => {
+                figures.forEach(figure => {
+                    const key = `${setName}-${figure.id}`;
+                    const data = figureData[key];
+                    
+                    // Only include items with prices $5+ that aren't sold
+                    if (data?.price && data.price >= 5 && !data.sold) {
+                        const listing = {
+                            title: `HeroClix ${setName} #${figure.id} ${figure.name}${figure.quantity > 1 ? ` (x${figure.quantity})` : ''}`,
+                            description: generateListingDescription(setName, figure, data),
+                            price: data.price,
+                            quantity: figure.quantity,
+                            total: data.price * figure.quantity
+                        };
+                        listings.push(listing);
+                        totalItems += figure.quantity;
+                    }
+                });
+            });
+            
+            // Sort by total value (highest first)
+            listings.sort((a, b) => b.total - a.total);
+            
+            // Create listing document
+            const listingDoc = `
+# HeroClix Collection Listings
+**Generated on:** ${new Date().toLocaleDateString()}
+**Total Items:** ${totalItems}
+**Total Value:** ${listings.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
+
+---
+
+${listings.map((listing, index) => `
+## ${index + 1}. ${listing.title}
+**Price:** ${listing.price.toFixed(2)}${listing.quantity > 1 ? ` each (${listing.total.toFixed(2)} total)` : ''}
+
+${listing.description}
+
+---
+`).join('')}
+
+## Bulk Lots Available
+For buyers interested in multiple items, bulk discounts available!
+Contact me for custom bundle pricing.
+
+## Shipping & Handling
+- Careful packaging with bubble wrap
+- Ships within 1 business day
+- Tracking provided
+- Combined shipping available
+
+## Condition
+All figures are in played/good condition unless noted otherwise.
+Photos available upon request.
+            `.trim();
+            
+            // Download as text file
+            const blob = new Blob([listingDoc], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'heroclix-listings.txt';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            alert(`Generated ${listings.length} listings for items $5+ (${totalItems} total figures)`);
+        }
+        
+        // Generate description for a single listing
+        function generateListingDescription(setName, figure, data) {
+            let description = `**Set:** ${setName}\n`;
+            description += `**Figure Number:** ${figure.id}\n`;
+            description += `**Character:** ${figure.name}\n`;
+            
+            if (figure.quantity > 1) {
+                description += `**Quantity:** ${figure.quantity} available\n`;
             }
+            
+            if (data.notes) {
+                description += `**Notes:** ${data.notes}\n`;
+            }
+            
+            // Add some generic HeroClix selling points
+            description += `\n**Perfect for:**\n`;
+            description += `- HeroClix players and collectors\n`;
+            description += `- Tabletop gaming enthusiasts\n`;
+            description += `- Comic book and superhero fans\n`;
+            
+            return description;
+        }
+        
+        // Enhanced export for selling
+        function exportForSelling() {
+            const salesData = [];
+            let totalValue = 0;
+            let totalItems = 0;
+            let soldValue = 0;
+            let soldItems = 0;
+            
+            Object.entries(collectionData).forEach(([setName, figures]) => {
+                figures.forEach(figure => {
+                    const key = `${setName}-${figure.id}`;
+                    const data = figureData[key] || {};
+                    const price = data.price || 0;
+                    const total = price * figure.quantity;
+                    
+                    totalItems += figure.quantity;
+                    totalValue += total;
+                    
+                    if (data.sold) {
+                        soldItems += figure.quantity;
+                        soldValue += total;
+                    }
+                    
+                    salesData.push({
+                        'Set': setName,
+                        'ID': figure.id,
+                        'Name': figure.name,
+                        'Quantity': figure.quantity,
+                        'Price Each': price.toFixed(2),
+                        'Total Value': total.toFixed(2),
+                        'Status': data.sold ? 'SOLD' : 'AVAILABLE',
+                        'Priority': price >= 10 ? 'HIGH VALUE' : price >= 5 ? 'MEDIUM' : 'LOW',
+                        'Listing Title': `HeroClix ${setName} #${figure.id} ${figure.name}`,
+                        'Notes': data.notes || '',
+                        'eBay Category': getEBayCategory(setName),
+                        'Keywords': generateKeywords(setName, figure.name)
+                    });
+                });
+            });
+            
+            // Create summary
+            const summary = [
+                '=== COLLECTION SUMMARY ===',
+                `Total Items: ${totalItems}`,
+                `Total Value: ${totalValue.toFixed(2)}`,
+                `Sold Items: ${soldItems}`,
+                `Sold Value: ${soldValue.toFixed(2)}`,
+                `Remaining Items: ${totalItems - soldItems}`,
+                `Remaining Value: ${(totalValue - soldValue).toFixed(2)}`,
+                '',
+                '=== HIGH VALUE ITEMS (>$10) ===',
+                ...salesData.filter(item => parseFloat(item['Price Each']) >= 10 && item.Status === 'AVAILABLE')
+                    .sort((a, b) => parseFloat(b['Price Each']) - parseFloat(a['Price Each']))
+                    .slice(0, 20)
+                    .map(item => `${item['Listing Title']} - ${item['Price Each']}`),
+                '',
+                '=== BULK LOT OPPORTUNITIES ===',
+                ...getSetSummaries(salesData),
+                ''
+            ];
+            
+            // Convert to CSV
+            const headers = Object.keys(salesData[0]);
+            const csvContent = [
+                summary.join('\n'),
+                '',
+                headers.join(','),
+                ...salesData.map(row => headers.map(header => `"${row[header]}"`).join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'heroclix-selling-report.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // Get appropriate eBay category
+        function getEBayCategory(setName) {
+            if (setName.toLowerCase().includes('marvel')) return 'Collectible Card Games > HeroClix > Marvel';
+            if (setName.toLowerCase().includes('dc') || setName.toLowerCase().includes('batman') || setName.toLowerCase().includes('superman')) {
+                return 'Collectible Card Games > HeroClix > DC Comics';
+            }
+            if (setName.toLowerCase().includes('lord of the rings') || setName.toLowerCase().includes('hobbit')) {
+                return 'Collectible Card Games > HeroClix > Other';
+            }
+            return 'Collectible Card Games > HeroClix > Other';
+        }
+        
+        // Generate relevant keywords
+        function generateKeywords(setName, figureName) {
+            const keywords = ['HeroClix', 'miniature', 'tabletop', 'gaming'];
+            
+            if (setName.toLowerCase().includes('marvel')) keywords.push('Marvel', 'superhero', 'comic');
+            if (setName.toLowerCase().includes('dc')) keywords.push('DC Comics', 'superhero', 'comic');
+            if (setName.toLowerCase().includes('batman')) keywords.push('Batman', 'Dark Knight');
+            if (setName.toLowerCase().includes('spider')) keywords.push('Spider-Man', 'Spiderman');
+            if (setName.toLowerCase().includes('x-men')) keywords.push('X-Men', 'mutant');
+            if (setName.toLowerCase().includes('avengers')) keywords.push('Avengers', 'Marvel');
+            
+            return keywords.join(', ');
+        }
+        
+        // Get set summaries for bulk opportunities
+        function getSetSummaries(salesData) {
+            const setBulk = {};
+            
+            salesData.forEach(item => {
+                if (item.Status === 'AVAILABLE') {
+                    if (!setBulk[item.Set]) {
+                        setBulk[item.Set] = { count: 0, value: 0 };
+                    }
+                    setBulk[item.Set].count += parseInt(item.Quantity);
+                    setBulk[item.Set].value += parseFloat(item['Total Value']);
+                }
+            });
+            
+            return Object.entries(setBulk)
+                .filter(([set, data]) => data.count >= 5) // Only show sets with 5+ items
+                .sort((a, b) => b[1].value - a[1].value)
+                .slice(0, 10)
+                .map(([set, data]) => `${set}: ${data.count} items, ${data.value.toFixed(2)} value`);
         }
 
         // Initialize app when page loads
